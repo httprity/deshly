@@ -47,6 +47,25 @@ Predictions must be calculated:
 - predicted_engagement: Center around cluster's typical_engagement_rate, vary by ±std_dev
 - Adjust by brand_voice_strength (0.81 strong = +20%, 0.5 weak = -30%)`;
 
+// Sleep helper for sequential staggering
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Wrapper around callLLM that retries once on rate-limit errors
+async function callLLMWithRetry(args: Parameters<typeof callLLM>[0]) {
+  try {
+    return await callLLM(args);
+  } catch (error: any) {
+    const msg = String(error?.message || error);
+    const isRateLimit = msg.includes("429") || msg.includes("rate_limit") || msg.includes("Rate limit");
+    if (isRateLimit) {
+      console.log("Rate limit hit, retrying after 4s...");
+      await sleep(4000);
+      return await callLLM(args);
+    }
+    throw error;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -111,8 +130,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate campaigns in parallel for speed
-    const campaignPromises = clusters.map(async (cluster: Cluster) => {
+   // Generate campaigns sequentially with stagger to respect rate limits
+   const generateForCluster = async (cluster: Cluster) => {
       const fullPrompt = `${GENERATION_PROMPT}
 
 BRAND VOICE PROFILE:
@@ -127,7 +146,7 @@ TARGET CLUSTER:
 ${JSON.stringify(cluster, null, 2)}`;
 
 try {
-    const llmResult = await callLLM({
+  const llmResult = await callLLMWithRetry({
       userPrompt: fullPrompt,
       jsonMode: true,
       temperature: 0.7,
@@ -182,9 +201,15 @@ try {
           error: genError.message,
         };
       }
-    });
+    };
 
-    const results = await Promise.all(campaignPromises);
+    // Run clusters sequentially with a small stagger
+    const results = [];
+    for (let i = 0; i < clusters.length; i++) {
+      if (i > 0) await sleep(700);
+      const result = await generateForCluster(clusters[i]);
+      results.push(result);
+    }
 
     return NextResponse.json({
       success: true,
