@@ -197,8 +197,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BANGLA CALLIGRAPHY MOMENT */}
-<section className="relative py-32 md:py-48 overflow-hidden border-y border-cream/5">
+{/* BANGLA CALLIGRAPHY MOMENT */}
+<section className="relative py-24 md:py-32 overflow-hidden border-y border-cream/5">
   <GradientOrbs intensity="intense" />
 
   <div ref={banglaParallax} className="relative">
@@ -209,16 +209,16 @@ export default function Home() {
         <Image
           src="/assets/deshly-bangla.png"
           alt="বেশলি — Deshly"
-          width={1600}
-          height={1200}
+          width={1800} // Reduced from 1200
+          height={500} // Reduced from 800
           priority
-          /* Pushing the scale even further */
-          className="w-[clamp(350px,85vw,1200px)] h-auto select-none drop-shadow-[0_0_60px_rgba(213,97,62,0.15)]"
+          /* Updated clamp values: Min 250px, Preferred 50vw, Max 700px */
+          className="w-[clamp(250px,50vw,700px)] h-auto select-none drop-shadow-[0_0_60px_rgba(213,97,62,0.15)]"
         />
       </div>
 
-    
-      <div className="-mt-16 md:-mt-32 max-w-xl mx-auto relative z-10">
+      {/* Adjusting the margin-top of the text below since the image is smaller */}
+      <div className="-mt-8 md:-mt-0 max-w-xl mx-auto relative z-10">
         <p className="text-cream/55 text-base md:text-lg leading-snug tracking-tight">
           <span className="italic font-serif text-brass">Deshly</span> — from <span className="italic">desh</span>, the Bangla word for homeland. A platform for brands whose roots are here, whose customers are everywhere.
         </p>
