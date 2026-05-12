@@ -1,26 +1,179 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* DARK THEME — DESHLY V2 */
+  
+  /* Surfaces — deep warm blacks */
+  --color-void: #0A0908;
+  --color-ink: #0F0D0B;
+  --color-ink-soft: #181614;
+  --color-ink-deep: #050403;
+  
+  /* Foreground */
+  --color-cream: #F5EFE3;
+  --color-cream-dim: #D9D2C5;
+  --color-cream-muted: #8B8377;
+  
+  /* Accents — your existing brand */
+  --color-terracotta: #D5613E;
+  --color-terracotta-glow: #E8835C;
+  --color-terracotta-deep: #B14525;
+  --color-brass: #B8956A;
+  --color-brass-glow: #D4B589;
+  --color-brass-deep: #8C6E45;
+  
+  /* Gradient stops — used for mesh orbs */
+  --color-grad-1: #D5613E;
+  --color-grad-2: #B8956A;
+  --color-grad-3: #6A4628;
+  
+  /* Type */
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-bangla: "Tiro Bangla", serif;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
+  
+  /* Animation easings — Renok-style */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: rgba(245, 239, 227, 0.06);
+}
+
+html {
+  background: var(--color-void);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-void);
+  color: var(--color-cream);
+  overflow-x: hidden;
+}
+
+/* Selection */
+::selection {
+  background: var(--color-terracotta);
+  color: var(--color-void);
+}
+
+/* Subtle film grain — premium feel */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  z-index: 9999;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-brass-deep);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brass);
+}
+
+/* Animated gradient mesh orbs */
+@keyframes orbit-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+@keyframes orbit-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-40px, 30px) scale(1.05); }
+  66% { transform: translate(25px, -40px) scale(0.9); }
+}
+@keyframes orbit-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, 50px) scale(1.15); }
+}
+
+.orb-1 {
+  animation: orbit-1 18s ease-in-out infinite;
+}
+.orb-2 {
+  animation: orbit-2 22s ease-in-out infinite;
+}
+.orb-3 {
+  animation: orbit-3 26s ease-in-out infinite;
+}
+
+/* Marquee */
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee-scroll 35s linear infinite;
+}
+
+/* Magnetic transitions */
+.magnetic {
+  transition: transform 0.3s var(--ease-out-expo);
+  will-change: transform;
+}
+
+/* Reveal initial state — GSAP overrides */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(40px);
+  will-change: opacity, transform;
+}
+.reveal-fade {
+  opacity: 0;
+  will-change: opacity;
+}
+
+/* Bangla serif */
+.font-bangla {
+  font-family: var(--font-bangla);
+}
+
+/* Aliases for shorter Tailwind class refs */
+.font-serif {
+  font-family: var(--font-serif);
+}
+.font-mono {
+  font-family: var(--font-mono);
 }
