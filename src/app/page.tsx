@@ -74,12 +74,12 @@ export default function Home() {
           {/* H1 - Changed mb-6 to mb-0 */}
 <h1 ref={heroRef} className="font-serif text-[clamp(3rem,9vw,9rem)] leading-[0.95] tracking-[-0.02em] mb-0">
   <div className="overflow-hidden">
-    <span data-word className="inline-block mr-4">Your</span>
-    <span data-word className="inline-block mr-4">all-in-one</span>
+    <span data-word className="inline-block mr-4">Grow Beyond</span>
+    <span data-word className="inline-block mr-4 italic text-terracotta">Borders</span>
   </div>
   <div className="overflow-hidden">
-    <span data-word className="inline-block mr-4 italic text-terracotta">brand</span>
-    <span data-word className="inline-block">intelligence.</span>
+    <span data-word className="inline-block mr-4">with</span>
+    <span data-word className="inline-block">Confidence.</span>
   </div>
 </h1>
 
@@ -87,7 +87,7 @@ export default function Home() {
 <div className="grid grid-cols-12 gap-6 mt-4 items-start">
   <div ref={heroSubRef} className="col-span-12 md:col-span-7">
     <p className="text-lg md:text-xl text-cream/65 leading-relaxed max-w-2xl">
-      Built in Dhaka. Speaks every diaspora. Deshly turns your brand voice into culturally-fluent campaigns for 8 countries — automatically.
+    Deshly helps Bangladeshi fashion and lifestyle brands create marketing that feels right for Bangladeshis living in different parts of the world.
     </p>
 
     <div ref={heroCtaRef} className="mt-10 flex flex-wrap gap-4 items-center">
@@ -173,16 +173,16 @@ export default function Home() {
           </div>
 
           <div className="space-y-10 md:space-y-16">
-            <h2 data-reveal-child className="font-serif text-[clamp(2.5rem,8vw,8rem)] leading-[0.95] tracking-tight text-cream">
+            <h2 data-reveal-child className="font-serif text-[clamp(2rem,6vw,6rem)] leading-[0] tracking-tight text-cream">
               One <span className="italic">brand.</span>
             </h2>
 
-            <h2 data-reveal-child className="font-serif text-[clamp(2.5rem,8vw,8rem)] leading-[0.95] tracking-tight text-cream/40 pl-0 md:pl-12">
-              Eight cities. <span className="italic text-brass">Eight cultures.</span>
+            <h2 data-reveal-child className="font-serif text-[clamp(2rem,6vw,6rem)] leading-[0.5] tracking-tight text-cream/40 pl-0 md:pl-12">
+              Different cities. <span className="italic text-brass">Different cultures.</span>
             </h2>
 
-            <h2 data-reveal-child className="font-serif text-[clamp(2.5rem,8vw,8rem)] leading-[0.95] tracking-tight text-cream/40 pl-0 md:pl-24">
-              One voice that fits <span className="italic text-terracotta">all of them.</span>
+            <h2 data-reveal-child className="font-serif text-[clamp(2rem,6vw,6rem)] leading-[0.2] tracking-tight text-cream/40 pl-0 md:pl-24">
+              Your marketing should speak to <span className="italic text-terracotta">all of them.</span>
             </h2>
 
             <div data-reveal-child className="pt-12 md:pt-20 border-t border-cream/10 pl-0 md:pl-36 max-w-3xl">
@@ -209,7 +209,7 @@ export default function Home() {
         <Image
           src="/assets/deshly-bangla.png"
           alt="বেশলি — Deshly"
-          width={1800} // Reduced from 1200
+          width={800} // Reduced from 1200
           height={500} // Reduced from 800
           priority
           /* Updated clamp values: Min 250px, Preferred 50vw, Max 700px */
@@ -237,11 +237,11 @@ export default function Home() {
               <span>The Product</span>
             </div>
             <h2 className="font-serif text-[clamp(2.5rem,6vw,5.5rem)] leading-[1] tracking-tight mb-6">
-              Four <span className="italic text-terracotta">surfaces.</span>
+              Three <span className="italic text-terracotta">surfaces.</span>
               <br />One brain.
             </h2>
             <p className="text-lg text-cream/55 leading-relaxed max-w-xl">
-              Every Deshly surface shares the same underlying intelligence — your brand voice, the cluster graph, the multi-LLM stack. Each surface is a different way to use it.
+            Everything inside Deshly is designed to help small brands create better campaigns faster — without needing marketing experience.
             </p>
           </div>
 
