@@ -159,7 +159,7 @@ export default function GeneratorPage() {
     >
       {/* Empty state — no brand voice */}
       {!brandVoiceId && (
-        <div className="bg-ink rounded-3xl p-16 text-center border border-cream/5 relative overflow-hidden">
+        <div className="bg-ink rounded-2xl sm:rounded-3xl p-8 sm:p-12 lg:p-16 text-center border border-cream/5 relative overflow-hidden">
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -188,7 +188,7 @@ export default function GeneratorPage() {
       {brandVoiceId && (
         <>
           {/* PRODUCT INPUT */}
-          <div className="bg-ink rounded-3xl p-8 lg:p-10 mb-6 border border-cream/5 relative overflow-hidden">
+          <div className="bg-ink rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 mb-6 border border-cream/5 relative overflow-hidden">
             <div
               className="absolute top-0 left-0 right-0 h-px"
               style={{
@@ -358,7 +358,7 @@ export default function GeneratorPage() {
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.15, duration: 0.5 }}
-                      className="bg-gradient-to-br from-ink-soft to-ink rounded-3xl p-7 border border-cream/8 relative overflow-hidden"
+                      className="bg-gradient-to-br from-ink-soft to-ink rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-cream/8 relative overflow-hidden"
                     >
                       <div
                         className="absolute top-0 left-0 right-0 h-px"

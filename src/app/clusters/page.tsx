@@ -117,7 +117,7 @@ export default function ClustersPage() {
       {/* MAP + LIST */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         {/* MAP */}
-        <div className="lg:col-span-2 bg-ink rounded-3xl overflow-hidden h-[600px] relative border border-cream/8">
+        <div className="lg:col-span-2 bg-ink rounded-2xl sm:rounded-3xl overflow-hidden h-[400px] sm:h-[500px] lg:h-[600px] relative border border-cream/8">
           {/* Top accent */}
           <div
             className="absolute top-0 left-0 right-0 h-px z-10"
@@ -202,7 +202,7 @@ export default function ClustersPage() {
         </div>
 
         {/* CLUSTER LIST */}
-        <div className="bg-ink rounded-3xl p-5 max-h-[600px] overflow-y-auto border border-cream/8 relative">
+        <div className="bg-ink rounded-2xl sm:rounded-3xl p-5 max-h-[500px] lg:max-h-[600px] overflow-y-auto border border-cream/8 relative">
           <div className="text-[10px] uppercase tracking-[0.18em] text-brass font-medium mb-4 px-2 sticky top-0 bg-ink z-10 pb-2 border-b border-cream/5">
             {filteredClusters.length} CLUSTERS
           </div>
@@ -253,7 +253,7 @@ export default function ClustersPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-gradient-to-br from-ink-soft to-ink rounded-3xl p-10 border border-cream/8 relative overflow-hidden"
+            className="bg-gradient-to-br from-ink-soft to-ink rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 border border-cream/8 relative overflow-hidden"
           >
             <div
               className="absolute top-0 left-0 right-0 h-px"
@@ -277,14 +277,14 @@ export default function ClustersPage() {
 
             <div className="relative">
               {/* Header */}
-              <div className="flex items-start justify-between mb-8">
-                <div className="flex items-start gap-5">
-                  <div className="text-6xl">{FLAGS[selected.country]}</div>
-                  <div>
+              <div className="flex items-start justify-between mb-6 sm:mb-8 gap-3">
+                <div className="flex items-start gap-3 sm:gap-5 min-w-0">
+                  <div className="text-4xl sm:text-6xl flex-shrink-0">{FLAGS[selected.country]}</div>
+                  <div className="min-w-0">
                     <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-2">
                       CLUSTER · {selected.segment_type.toUpperCase()}
                     </div>
-                    <h2 className="font-serif text-5xl leading-[0.95] tracking-tight">
+                    <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.95] tracking-tight break-words">
                       {selected.city}
                     </h2>
                     <div className="text-sm text-cream/50 mt-2 font-mono">

@@ -84,7 +84,7 @@ export default function DocsPage() {
 
       {/* ARCHITECTURE */}
       <Section icon={Network} title="ARCHITECTURE">
-        <div className="bg-ink-deep border border-cream/8 rounded-3xl p-8 font-mono text-[11px] text-cream/85 leading-relaxed overflow-x-auto relative">
+      <div className="bg-ink-deep border border-cream/8 rounded-2xl sm:rounded-3xl p-4 sm:p-8 font-mono text-[9px] sm:text-[11px] text-cream/85 leading-relaxed overflow-x-auto relative">
           <div
             className="absolute top-0 left-0 right-0 h-px"
             style={{
@@ -231,7 +231,7 @@ export default function DocsPage() {
 
       {/* API ENDPOINTS */}
       <Section icon={Zap} title="API ENDPOINTS · 5 LIVE ROUTES">
-        <div className="bg-ink-deep border border-cream/8 rounded-3xl p-7 font-mono text-xs space-y-4 relative overflow-hidden">
+      <div className="bg-ink-deep border border-cream/8 rounded-2xl sm:rounded-3xl p-5 sm:p-7 font-mono text-[11px] sm:text-xs space-y-4 relative overflow-hidden">
           <div
             className="absolute top-0 left-0 right-0 h-px"
             style={{
@@ -269,7 +269,7 @@ export default function DocsPage() {
 
       {/* DATABASE SCHEMA */}
       <Section icon={Database} title="DATABASE SCHEMA · POSTGRES 16 + pgvector">
-        <div className="bg-ink border border-cream/8 rounded-3xl p-7 font-mono text-xs space-y-5">
+      <div className="bg-ink border border-cream/8 rounded-2xl sm:rounded-3xl p-5 sm:p-7 font-mono text-[11px] sm:text-xs space-y-5 overflow-x-auto">
           <SchemaTable
             name="brands"
             cols="id uuid · name text · website_url text · industry text · created_at timestamptz"
@@ -540,7 +540,7 @@ function Endpoint({ method, path, desc }: { method: "GET" | "POST"; path: string
         </span>
         <span className="text-cream font-mono">{path}</span>
       </div>
-      <div className="text-cream/55 mt-1.5 leading-relaxed pl-12">{desc}</div>
+      <div className="text-cream/55 mt-1.5 leading-relaxed pl-0 sm:pl-12">{desc}</div>
     </div>
   );
 }

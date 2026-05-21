@@ -66,11 +66,11 @@ export default function BrandDNAPage() {
         </>
       }
     >
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* ============================================================
             INPUT PANEL
             ============================================================ */}
-        <div className="bg-ink rounded-3xl p-8 lg:p-10 border border-cream/5 relative overflow-hidden">
+        <div className="bg-ink rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 border border-cream/5 relative overflow-hidden">
           {/* Top accent gradient */}
           <div
             className="absolute top-0 left-0 right-0 h-px"
@@ -163,7 +163,7 @@ export default function BrandDNAPage() {
         {/* ============================================================
             OUTPUT PANEL
             ============================================================ */}
-        <div className="bg-gradient-to-br from-ink-soft to-ink rounded-3xl p-8 lg:p-10 border border-cream/5 min-h-[700px] relative overflow-hidden">
+        <div className="bg-gradient-to-br from-ink-soft to-ink rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 border border-cream/5 min-h-[400px] sm:min-h-[600px] xl:min-h-[700px] relative overflow-hidden">
           {/* Top accent gradient */}
           <div
             className="absolute top-0 left-0 right-0 h-px"
@@ -204,7 +204,7 @@ export default function BrandDNAPage() {
 
             {/* Empty state */}
             {!profile && !loading && (
-              <div className="flex flex-col items-center justify-center h-[520px] text-center">
+              <div className="flex flex-col items-center justify-center h-[320px] sm:h-[420px] xl:h-[520px]">
                 <div className="relative mb-8">
                   <div className="w-20 h-20 rounded-full border border-brass/20 flex items-center justify-center relative">
                     <Sparkles className="w-7 h-7 text-brass/40" strokeWidth={1.5} />
@@ -259,7 +259,7 @@ export default function BrandDNAPage() {
                       Voice Strength Score
                     </div>
                     <div className="flex items-baseline gap-3">
-                      <div className="font-serif text-7xl text-cream leading-none">
+                    <div className="font-serif text-5xl sm:text-6xl xl:text-7xl text-cream leading-none">
                         {(profile.voice_strength_score * 100).toFixed(0)}
                       </div>
                       <div className="text-cream/40 text-lg">/ 100</div>
