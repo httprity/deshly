@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import type { BrandVoiceProfile } from "@/lib/types";
 import { ProductShell } from "@/components/ProductShell";
-import { MagneticButton } from "@/components/MagneticButton";
 
 export default function BrandDNAPage() {
   const [brandName, setBrandName] = useState("");
@@ -62,7 +61,7 @@ export default function BrandDNAPage() {
       }
       pageSubtitle={
         <>
-          Paste 10 of your recent Instagram or Facebook captions. We&apos;ll extract a structured profile of your brand&apos;s voice — tone, vocabulary, language mix, cultural register — and use it as the personalization layer for every campaign you generate.
+          Paste 10 of your recent Instagram or Facebook captions. Deshly reads how your brand actually talks — its personality, words it repeats, vibe, and unwritten rules — and uses that as the personalization layer for every campaign you generate.
         </>
       }
     >
@@ -71,7 +70,6 @@ export default function BrandDNAPage() {
             INPUT PANEL
             ============================================================ */}
         <div className="bg-ink rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 border border-cream/5 relative overflow-hidden">
-          {/* Top accent gradient */}
           <div
             className="absolute top-0 left-0 right-0 h-px"
             style={{
@@ -141,7 +139,7 @@ export default function BrandDNAPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Extracting brand DNA...
+                  Reading your voice...
                 </>
               ) : (
                 <>
@@ -164,7 +162,6 @@ export default function BrandDNAPage() {
             OUTPUT PANEL
             ============================================================ */}
         <div className="bg-gradient-to-br from-ink-soft to-ink rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 border border-cream/5 min-h-[400px] sm:min-h-[600px] xl:min-h-[700px] relative overflow-hidden">
-          {/* Top accent gradient */}
           <div
             className="absolute top-0 left-0 right-0 h-px"
             style={{
@@ -173,7 +170,6 @@ export default function BrandDNAPage() {
             }}
           />
 
-          {/* Floating brass glow */}
           <div
             className="absolute pointer-events-none"
             style={{
@@ -190,7 +186,7 @@ export default function BrandDNAPage() {
           <div className="relative">
             <div className="flex items-center justify-between mb-8">
               <div className="text-[10px] uppercase tracking-[0.2em] text-brass">
-                OUTPUT · EXTRACTED PROFILE
+                OUTPUT · BRAND PROFILE
               </div>
               {profile ? (
                 <div className="flex items-center gap-1.5 text-[10px] text-green-400">
@@ -204,7 +200,7 @@ export default function BrandDNAPage() {
 
             {/* Empty state */}
             {!profile && !loading && (
-              <div className="flex flex-col items-center justify-center h-[320px] sm:h-[420px] xl:h-[520px]">
+              <div className="flex flex-col items-center justify-center h-[320px] sm:h-[420px] xl:h-[520px] text-center">
                 <div className="relative mb-8">
                   <div className="w-20 h-20 rounded-full border border-brass/20 flex items-center justify-center relative">
                     <Sparkles className="w-7 h-7 text-brass/40" strokeWidth={1.5} />
@@ -222,7 +218,7 @@ export default function BrandDNAPage() {
 
             {/* Loading state */}
             {loading && (
-              <div className="flex flex-col items-center justify-center h-[520px]">
+              <div className="flex flex-col items-center justify-center h-[320px] sm:h-[420px] xl:h-[520px]">
                 <div className="relative mb-8">
                   <Loader2 className="w-12 h-12 animate-spin text-terracotta" strokeWidth={1.5} />
                   <div
@@ -245,7 +241,7 @@ export default function BrandDNAPage() {
             {/* Profile output */}
             {profile && (
               <div className="space-y-6 text-sm">
-                {/* Voice Strength Score — hero metric */}
+                {/* Voice Strength — hero metric */}
                 <div className="p-6 bg-ink-deep rounded-2xl border border-cream/8 relative overflow-hidden">
                   <div
                     className="absolute inset-0 pointer-events-none"
@@ -256,11 +252,11 @@ export default function BrandDNAPage() {
                   />
                   <div className="relative">
                     <div className="text-[10px] uppercase tracking-[0.18em] text-brass mb-3">
-                      Voice Strength Score
+                      Voice Strength
                     </div>
                     <div className="flex items-baseline gap-3">
-                    <div className="font-serif text-5xl sm:text-6xl xl:text-7xl text-cream leading-none">
-                        {(profile.voice_strength_score * 100).toFixed(0)}
+                      <div className="font-serif text-5xl sm:text-6xl xl:text-7xl text-cream leading-none">
+                        {profile.voice_strength.score}
                       </div>
                       <div className="text-cream/40 text-lg">/ 100</div>
                     </div>
@@ -268,17 +264,20 @@ export default function BrandDNAPage() {
                       <div
                         className="h-full bg-gradient-to-r from-terracotta to-brass rounded-full transition-all duration-1000"
                         style={{
-                          width: `${profile.voice_strength_score * 100}%`,
+                          width: `${profile.voice_strength.score}%`,
                         }}
                       />
+                    </div>
+                    <div className="text-xs text-cream/55 italic mt-4 leading-relaxed">
+                      &ldquo;{profile.voice_strength.explanation}&rdquo;
                     </div>
                   </div>
                 </div>
 
-                {/* Tone */}
-                <Section title="Tone">
+                {/* Brand Personality */}
+                <Section title="Brand Personality">
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {profile.voice.tone.map((t) => (
+                    {profile.brand_personality.traits.map((t) => (
                       <span
                         key={t}
                         className="px-3 py-1.5 bg-terracotta/15 text-terracotta border border-terracotta/20 rounded-full text-xs"
@@ -287,15 +286,37 @@ export default function BrandDNAPage() {
                       </span>
                     ))}
                   </div>
-                  <div className="text-cream/55 text-sm italic leading-relaxed">
-                    &ldquo;{profile.voice.tone_descriptors}&rdquo;
+                  <div className="text-cream/65 text-sm italic leading-relaxed">
+                    &ldquo;{profile.brand_personality.summary}&rdquo;
                   </div>
                 </Section>
 
-                {/* Signature Words */}
-                <Section title="Signature Vocabulary">
+                {/* How They Talk */}
+                <Section title="How They Talk">
+                  <div className="space-y-3">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-brass/80 mb-1.5">
+                        Style
+                      </div>
+                      <div className="text-cream/75 text-sm leading-relaxed">
+                        {profile.how_they_talk.style}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-brass/80 mb-1.5">
+                        Feeling
+                      </div>
+                      <div className="text-cream/75 text-sm leading-relaxed">
+                        {profile.how_they_talk.feeling}
+                      </div>
+                    </div>
+                  </div>
+                </Section>
+
+                {/* Words They Repeat */}
+                <Section title="Words They Repeat">
                   <div className="flex flex-wrap gap-2">
-                    {profile.vocabulary.signature_words.map((w) => (
+                    {profile.words_they_repeat.map((w) => (
                       <span
                         key={w}
                         className="px-3 py-1.5 bg-cream/5 border border-cream/10 rounded-full text-xs text-cream/80"
@@ -306,37 +327,10 @@ export default function BrandDNAPage() {
                   </div>
                 </Section>
 
-                {/* Language Mix */}
-                <Section title="Language Mix">
-                  <div className="text-cream/80 mb-2">
-                    Bangla–English ratio:{" "}
-                    <strong className="text-terracotta font-mono">
-                      {profile.language_mix.bangla_english_ratio}
-                    </strong>
-                  </div>
-                  <div className="text-cream/55 text-xs italic leading-relaxed">
-                    {profile.language_mix.code_switching_pattern}
-                  </div>
-                </Section>
-
-                {/* Cultural Register */}
-                <Section title="Cultural Register">
-                  <div className="space-y-2 text-xs text-cream/65 leading-relaxed">
-                    <div>
-                      <span className="text-brass font-medium">Identity ·</span>{" "}
-                      {profile.cultural_register.regional_identity}
-                    </div>
-                    <div>
-                      <span className="text-brass font-medium">Audience ·</span>{" "}
-                      {profile.cultural_register.formality_with_audience}
-                    </div>
-                  </div>
-                </Section>
-
-                {/* Brand Themes */}
-                <Section title="Brand Themes">
+                {/* What They Care About */}
+                <Section title="What They Care About">
                   <div className="flex flex-wrap gap-2">
-                    {profile.brand_themes.map((t) => (
+                    {profile.what_they_care_about.map((t) => (
                       <span
                         key={t}
                         className="px-3 py-1.5 bg-brass/15 text-brass border border-brass/25 rounded-full text-xs"
@@ -347,12 +341,32 @@ export default function BrandDNAPage() {
                   </div>
                 </Section>
 
-                {/* Never Does */}
-                <Section title="Never Does">
-                  <ul className="space-y-1.5 text-xs text-cream/50 leading-relaxed">
-                    {profile.things_brand_never_does.map((t, i) => (
-                      <li key={i} className="flex gap-2">
-                        <span className="text-terracotta">—</span>
+                {/* Their Brand Vibe */}
+                <Section title="Their Brand Vibe">
+                  <div className="p-4 bg-ink-deep border border-cream/8 rounded-xl mb-3">
+                    <div className="text-[10px] uppercase tracking-wider text-brass/80 mb-1.5">
+                      Identity
+                    </div>
+                    <div className="font-serif italic text-lg text-cream leading-tight">
+                      {profile.their_brand_vibe.identity}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-brass/80 mb-1.5">
+                      How they treat their audience
+                    </div>
+                    <div className="text-cream/65 text-sm leading-relaxed italic">
+                      {profile.their_brand_vibe.audience_relationship}
+                    </div>
+                  </div>
+                </Section>
+
+                {/* They Never */}
+                <Section title="They Never">
+                  <ul className="space-y-2 text-sm text-cream/65 leading-relaxed">
+                    {profile.they_never.map((t, i) => (
+                      <li key={i} className="flex gap-2.5">
+                        <span className="text-terracotta flex-shrink-0">—</span>
                         <span>{t}</span>
                       </li>
                     ))}
