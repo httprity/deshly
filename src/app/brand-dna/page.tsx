@@ -107,7 +107,7 @@ export default function BrandDNAPage() {
                   Your Captions
                 </div>
                 <div className="text-[10px] text-cream/30 font-mono">
-                  Paste 10, separated by blank lines
+                  One caption per line — or blank lines between
                 </div>
               </div>
               <textarea
@@ -119,14 +119,7 @@ export default function BrandDNAPage() {
               />
               <div className="text-[10px] text-cream/40 mt-2 font-mono flex items-center justify-between">
                 <span>{captions.length} characters</span>
-                <span>
-                  {
-                    captions
-                      .split(/\n\s*\n/)
-                      .filter((c) => c.trim().length > 0).length
-                  }{" "}
-                  captions detected
-                </span>
+                <span>{countCaptions(captions)} captions detected</span>
               </div>
             </label>
 
@@ -407,4 +400,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       {children}
     </div>
   );
+}
+function countCaptions(text: string): number {
+  if (!text.trim()) return 0;
+  // Prefer blank-line splitting (the recommended format)
+  const blocks = text.split(/\n\s*\n+/).filter((c) => c.trim().length > 0);
+  if (blocks.length > 1) return blocks.length;
+  // Fallback: count non-empty lines (if user used single line breaks)
+  const lines = text.split(/\n+/).filter((l) => l.trim().length > 5);
+  return Math.max(lines.length, blocks.length, 1);
 }

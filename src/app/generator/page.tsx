@@ -491,23 +491,22 @@ export default function GeneratorPage() {
                       />
 
                       <div className="relative">
-                        {/* HEADER */}
-                        <div className="flex items-start justify-between mb-6 pb-5 border-b border-cream/8">
-                          <div>
-                            <div className="text-3xl mb-3">
+                        {/* HEADER — compact single row */}
+                        <div className="flex items-center justify-between mb-5 pb-4 border-b border-cream/8 gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="text-2xl flex-shrink-0">
                               {FLAGS[r.cluster.country] || "🌍"}
                             </div>
-                            <div className="text-[10px] uppercase tracking-[0.15em] text-brass mb-1">
-                              {r.cluster.segment_type}
-                            </div>
-                            <div className="font-serif text-2xl leading-tight">
-                              {r.cluster.city}
-                            </div>
-                            <div className="text-[11px] text-cream/40 mt-1">
-                              {r.cluster.age_band}
+                            <div className="min-w-0">
+                              <div className="font-serif text-lg leading-tight truncate">
+                                {r.cluster.city}
+                              </div>
+                              <div className="text-[10px] uppercase tracking-[0.12em] text-cream/45 mt-0.5">
+                                {r.cluster.segment_type} · {r.cluster.age_band}
+                              </div>
                             </div>
                           </div>
-                          <div className="font-mono text-[10px] text-cream/30">
+                          <div className="font-mono text-[10px] text-cream/30 flex-shrink-0">
                             0{i + 1} / 0{results.length}
                           </div>
                         </div>
@@ -520,10 +519,10 @@ export default function GeneratorPage() {
 
                         {r.success && r.campaign && (
                           <div className="space-y-5">
-                            {/* CAPTION */}
+                            {/* CAPTION — auto-height, lighter padding */}
                             <div>
-                              <div className="flex items-center justify-between mb-2.5">
-                                <div className="text-[10px] uppercase tracking-[0.18em] text-brass">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-[10px] uppercase tracking-[0.15em] text-cream/55 font-medium">
                                   Caption
                                 </div>
                                 <button
@@ -545,7 +544,7 @@ export default function GeneratorPage() {
                                   )}
                                 </button>
                               </div>
-                              <div className="bg-ink-deep border border-cream/12 rounded-xl p-4 text-sm leading-relaxed text-cream/90 whitespace-pre-wrap min-h-[100px]">
+                              <div className="bg-ink-deep/60 border border-cream/8 rounded-lg p-3.5 text-[13px] leading-relaxed text-cream/85 whitespace-pre-wrap">
                                 {r.campaign.caption}
                               </div>
                             </div>
@@ -778,6 +777,7 @@ export default function GeneratorPage() {
                                           </>
                                         )}
                                       </button>
+                                      
                                     </div>
                                     <div className="text-[11px] leading-relaxed text-cream/70 font-mono break-words">
                                       {r.campaign.hashtags.join(" ")}
@@ -960,6 +960,15 @@ function buildCampaignPackage(r: any): string {
   if (!r.campaign) return "";
   const c = r.campaign;
   const platform = parseChannelRecommendation(c.channel_recommendation).platform;
+  const storyboard = (c.reels_storyboard || [])
+    .map(
+      (f: any) =>
+        `Frame ${f.frame} (${f.duration_seconds}s): ${f.visual}${
+          f.caption_overlay ? `\n  Overlay: "${f.caption_overlay}"` : ""
+        }`
+    )
+    .join("\n\n");
+
   return `═══ CAMPAIGN PACKAGE — ${r.cluster.city.toUpperCase()} ═══
 
 📍 AUDIENCE
@@ -984,16 +993,11 @@ ${c.hashtags.join(" ")}
 💬 WHATSAPP MESSAGE
 ${c.whatsapp_message}
 
-🎨 IMAGE PROMPTS
+🎬 REELS STORYBOARD
+${storyboard}
 
-— For Gemini —
+🎨 IMAGE PROMPT
 ${c.image_prompts.gemini}
-
-— For Midjourney —
-${c.image_prompts.midjourney}
-
-— For DALL·E —
-${c.image_prompts.dalle}
 
 ═══ END PACKAGE ═══`;
 }
