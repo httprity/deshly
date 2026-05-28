@@ -1,616 +1,965 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  Database,
-  Cpu,
-  Network,
-  GitBranch,
-  Shield,
-  Zap,
-  CheckCircle2,
-  Server,
-  Activity,
-  TrendingUp,
-} from "lucide-react";
-import { ProductShell } from "@/components/ProductShell";
+import { useEffect } from "react";
 
-interface SystemStatus {
-  brands: number;
-  brandVoices: number;
-  clusters: number;
-  campaigns: number;
-  ingestionLogs: number;
+const CSS = `
+:root{
+  --void:#0c0a09; --void-2:#14110f; --panel:#1a1613; --panel-line:#2a231e;
+  --terra:#d5613e; --terra-soft:#e08a6c; --brass:#b8956a; --brass-soft:#cbab86;
+  --cream:#f2ead8; --cream-dim:#a89e8c; --muted:#6f655a; --ok:#6f9e6a;
+  --display:"Instrument Serif",Georgia,serif;
+  --body:"Manrope",system-ui,sans-serif;
+  --mono:"Spline Sans Mono",monospace;
+  --maxw:1180px;
 }
+.dz *{box-sizing:border-box;margin:0;padding:0}
+.dz{background:var(--void);color:var(--cream);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;position:relative;min-height:100vh}
+.dz::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(900px 500px at 78% -5%, rgba(213,97,62,.16), transparent 60%),radial-gradient(700px 500px at 0% 18%, rgba(184,149,106,.10), transparent 55%)}
+.dz::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.dz .wrap{position:relative;z-index:2;max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+.dz nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(12,10,9,.72);border-bottom:1px solid var(--panel-line)}
+.dz .nav-inner{max-width:var(--maxw);margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.dz .brand{display:flex;align-items:baseline;gap:10px;font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:0}
+.dz .brand .dot{color:var(--terra)}
+.dz .brand small{font-family:var(--mono);font-size:11px;color:var(--brass);letter-spacing:.18em;text-transform:uppercase}
+.dz .nav-links{display:flex;gap:22px;font-size:13px;font-weight:500}
+.dz .nav-links a{color:var(--cream-dim);text-decoration:none;transition:color .2s}
+.dz .nav-links a:hover{color:var(--terra-soft)}
+.dz .nav-cta{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--terra);color:var(--terra-soft);padding:8px 14px;border-radius:2px;text-decoration:none;transition:.2s}
+.dz .nav-cta:hover{background:var(--terra);color:var(--void)}
+@media(max-width:760px){.dz .nav-links{display:none}}
+
+.dz header.hero{padding:96px 0 64px;position:relative}
+.dz .status-pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);border:1px solid var(--panel-line);border-radius:100px;padding:7px 14px;margin-bottom:28px}
+.dz .status-pill .live{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(111,158,106,.6);animation:dzpulse 2s infinite}
+@keyframes dzpulse{0%{box-shadow:0 0 0 0 rgba(111,158,106,.5)}70%{box-shadow:0 0 0 8px rgba(111,158,106,0)}100%{box-shadow:0 0 0 0 rgba(111,158,106,0)}}
+.dz h1.title{font-family:var(--display);font-weight:400;font-size:clamp(48px,7.5vw,92px);line-height:1.0;letter-spacing:-.015em;margin-bottom:8px}
+.dz h1.title .it{font-style:italic;color:var(--terra-soft)}
+.dz .lede{font-size:clamp(17px,2vw,21px);color:var(--cream-dim);max-width:680px;line-height:1.5}
+.dz .lede strong{color:var(--cream);font-weight:600}
+.dz .hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+.dz .hero-meta span{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--cream-dim);border:1px solid var(--panel-line);padding:7px 12px;border-radius:2px}
+
+.dz section{padding:60px 0;border-top:1px solid var(--panel-line)}
+.dz .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--terra);margin-bottom:14px}
+.dz h2{font-family:var(--display);font-weight:400;font-size:clamp(30px,4.2vw,46px);letter-spacing:-.01em;line-height:1.08;margin-bottom:18px}
+.dz h2 .it{font-style:italic;color:var(--brass-soft)}
+.dz .section-lede{font-size:17px;color:var(--cream-dim);max-width:720px;margin-bottom:38px}
+.dz p{margin-bottom:14px}
+.dz p.body{color:var(--cream-dim);max-width:760px}
+.dz p.body strong{color:var(--cream);font-weight:600}
+
+.dz .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--panel-line);border:1px solid var(--panel-line);border-radius:4px;overflow:hidden}
+.dz .stat{background:var(--void-2);padding:26px 22px}
+.dz .stat .n{font-family:var(--display);font-size:clamp(34px,4.5vw,46px);font-weight:400;color:var(--terra-soft);line-height:1;letter-spacing:-.01em}
+.dz .stat .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--cream-dim);margin-top:10px}
+@media(max-width:760px){.dz .stats{grid-template-columns:repeat(2,1fr)}}
+
+.dz .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.dz .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:860px){.dz .grid2,.dz .grid3{grid-template-columns:1fr}}
+
+.dz .card{background:var(--panel);border:1px solid var(--panel-line);border-radius:6px;padding:26px;transition:.25s}
+.dz .card:hover{border-color:#3a2f26;transform:translateY(-2px)}
+.dz .card h3{font-family:var(--display);font-weight:400;font-size:23px;margin-bottom:10px;letter-spacing:0}
+.dz .card h3 .num{font-family:var(--mono);font-size:12px;color:var(--terra);margin-right:8px}
+.dz .card p{color:var(--cream-dim);font-size:14.5px;margin-bottom:0}
+.dz .card .tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);border:1px solid var(--panel-line);padding:4px 9px;border-radius:2px;margin-top:14px;margin-right:6px}
+
+.dz .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--panel-line);border-radius:6px;overflow:hidden}
+.dz .flow .step{background:var(--void-2);padding:28px 24px;position:relative;border-right:1px solid var(--panel-line)}
+.dz .flow .step:last-child{border-right:none}
+.dz .flow .step .k{font-family:var(--mono);font-size:11px;color:var(--terra);letter-spacing:.15em;margin-bottom:14px}
+.dz .flow .step h4{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:8px}
+.dz .flow .step p{font-size:14px;color:var(--cream-dim);margin:0}
+@media(max-width:860px){.dz .flow{grid-template-columns:1fr}.dz .flow .step{border-right:none;border-bottom:1px solid var(--panel-line)}}
+
+.dz table.matrix{width:100%;border-collapse:collapse;font-size:14px}
+.dz table.matrix th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);padding:14px 16px;border-bottom:1px solid var(--panel-line)}
+.dz table.matrix td{padding:14px 16px;border-bottom:1px solid var(--panel-line);color:var(--cream-dim);vertical-align:top}
+.dz table.matrix td:first-child{color:var(--cream);font-weight:500}
+.dz .badge{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:100px;white-space:nowrap}
+.dz .badge.live{background:rgba(111,158,106,.14);color:var(--ok);border:1px solid rgba(111,158,106,.3)}
+.dz .badge.soon{background:rgba(184,149,106,.12);color:var(--brass-soft);border:1px solid rgba(184,149,106,.3)}
+.dz .badge.plan{background:rgba(111,101,90,.12);color:var(--cream-dim);border:1px solid var(--panel-line)}
+.dz .scrollx{overflow-x:auto}
+
+.dz .diagram{background:var(--void-2);border:1px solid var(--panel-line);border-radius:6px;padding:30px;font-family:var(--mono);font-size:13px;color:var(--cream-dim);overflow-x:auto}
+.dz .diagram pre{white-space:pre;line-height:1.7;margin:0}
+.dz .diagram .hl{color:var(--terra-soft)}
+.dz .diagram .br{color:var(--brass-soft)}
+.dz .diagram .ok{color:var(--ok)}
+
+.dz .stack-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.dz .chip{font-family:var(--mono);font-size:12px;color:var(--cream);background:var(--panel);border:1px solid var(--panel-line);padding:8px 13px;border-radius:3px}
+.dz .stack-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--terra);margin-bottom:10px}
+
+.dz .endpoint{background:var(--panel);border:1px solid var(--panel-line);border-radius:5px;padding:16px 18px;margin-bottom:10px;font-family:var(--mono);font-size:13px}
+.dz .endpoint .method{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.08em;padding:3px 8px;border-radius:3px;margin-right:12px;background:var(--terra);color:var(--void)}
+.dz .endpoint .method.get{background:var(--brass)}
+.dz .endpoint .path{color:var(--cream)}
+.dz .endpoint .desc{display:block;font-family:var(--body);font-size:13px;color:var(--cream-dim);margin-top:8px}
+
+.dz .team{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:760px}
+@media(max-width:900px){.dz .team{grid-template-columns:1fr}}
+.dz .member{background:var(--panel);border:1px solid var(--panel-line);border-radius:6px;padding:20px;text-align:center;transition:.25s}
+.dz .member:hover{border-color:var(--terra);transform:translateY(-2px)}
+.dz .avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 14px;background:linear-gradient(135deg,var(--terra),var(--brass));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:30px;color:var(--void);font-weight:400;border:2px solid var(--panel-line)}
+.dz .member .nm{font-family:var(--display);font-size:18px;font-weight:400;margin-bottom:3px}
+.dz .member .rl{font-size:12px;color:var(--terra-soft);margin-bottom:8px}
+.dz .member .em{font-family:var(--mono);font-size:10.5px;color:var(--muted);word-break:break-all}
+
+.dz .road{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:860px){.dz .road{grid-template-columns:1fr}}
+.dz .road .col{background:var(--panel);border:1px solid var(--panel-line);border-radius:6px;padding:24px}
+.dz .road .col .when{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--terra);margin-bottom:16px}
+.dz .road ul{list-style:none}
+.dz .road li{font-size:14px;color:var(--cream-dim);padding:8px 0 8px 20px;position:relative;border-bottom:1px solid var(--panel-line)}
+.dz .road li:last-child{border-bottom:none}
+.dz .road li::before{content:"→";position:absolute;left:0;color:var(--brass)}
+
+.dz .log{border-left:2px solid var(--panel-line);padding-left:24px;margin-left:6px}
+.dz .log .entry{position:relative;padding-bottom:22px}
+.dz .log .entry::before{content:"";position:absolute;left:-31px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--terra);border:2px solid var(--void)}
+.dz .log .v{font-family:var(--mono);font-size:12px;color:var(--terra-soft);letter-spacing:.06em}
+.dz .log .entry p{font-size:14px;color:var(--cream-dim);margin:6px 0 0}
+
+.dz footer{padding:56px 0 80px;border-top:1px solid var(--panel-line);text-align:center}
+.dz footer .fw{font-family:var(--display);font-size:38px;font-weight:400}
+.dz footer .fw .dot{color:var(--terra)}
+.dz footer .meta{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:14px}
+.dz footer a{color:var(--brass-soft);text-decoration:none}
+
+.dz .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.dz .reveal.in{opacity:1;transform:none}
+`;
 
 export default function DocsPage() {
-  const [status, setStatus] = useState<SystemStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    fetch("/api/system-status")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.status) setStatus(data.status);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll(".dz .reveal").forEach((el) => io.observe(el));
+    return () => io.disconnect();
   }, []);
 
   return (
-    <ProductShell
-      stepLabel="SYSTEM DOCUMENTATION"
-      pageTitle={
-        <>
-          Built like{" "}
-          <span className="italic text-terracotta">infrastructure</span>.
-        </>
-      }
-      pageSubtitle={
-        <>
-          Deshly is a multi-LLM, multi-RAG, MCP-exposed marketing intelligence platform. This page is the public audit trail — every claim on our submission form is verifiable here.
-        </>
-      }
-    >
-      {/* LIVE SYSTEM STATUS */}
-      <Section icon={Activity} title="LIVE SYSTEM STATUS">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {[
-            { label: "Brands", value: status?.brands ?? "—" },
-            { label: "Voice profiles", value: status?.brandVoices ?? "—" },
-            { label: "Clusters", value: status?.clusters ?? "—" },
-            { label: "Campaigns", value: status?.campaigns ?? "—" },
-            { label: "Ingestion runs", value: status?.ingestionLogs ?? "—" },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className="bg-ink border border-cream/8 rounded-2xl p-5 hover:border-brass/25 transition-all"
-            >
-              <div className="text-[10px] uppercase tracking-[0.18em] text-cream/45 mb-2">
-                {s.label}
-              </div>
-              <div className="font-serif text-4xl text-cream leading-none">
-                {loading ? (
-                  <span className="text-cream/30">...</span>
-                ) : (
-                  s.value
-                )}
-              </div>
-            </div>
-          ))}
+    <div className="dz">
+      {/* fonts + styles */}
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Spline+Sans+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+
+      {/* NAV */}
+      <nav>
+        <div className="nav-inner">
+          <div className="brand">
+            Deshly<span className="dot">.</span> <small>Docs</small>
+          </div>
+          <div className="nav-links">
+            <a href="#pitch">Pitch</a>
+            <a href="#product">Product</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#ai">AI Layer</a>
+            <a href="#roadmap">Roadmap</a>
+            <a href="#team">Team</a>
+          </div>
+          <a href="https://deshly.vercel.app" className="nav-cta">
+            Live App ↗
+          </a>
         </div>
-        <Note>Real-time pull from production database. No mocked numbers.</Note>
-      </Section>
+      </nav>
+
+      {/* HERO */}
+      <header className="hero">
+        <div className="wrap">
+          <span className="status-pill">
+            <span className="live"></span> System Live · Documentation v1.0
+          </span>
+          <h1 className="title">
+            Diaspora commerce,
+            <br />
+            <span className="it">spoken like a local.</span>
+          </h1>
+          <p className="lede" style={{ marginTop: 24 }}>
+            Deshly is an AI intelligence layer for{" "}
+            <strong>emerging-market D2C brands</strong> selling to their global
+            diaspora. It learns a brand&apos;s voice from its own captions, finds
+            the audiences most likely to buy each product, and generates{" "}
+            <strong>complete localized campaigns</strong> — captions, visuals,
+            reels, WhatsApp copy, and timing — for every community, in their
+            language and timezone.
+          </p>
+          <div className="hero-meta">
+            <span>Multimodal Content Engine</span>
+            <span>The Infinity AI BuildFest 2026</span>
+            <span>Team Vengeance</span>
+            <span>Bangladesh-seeded · Country-agnostic</span>
+          </div>
+        </div>
+      </header>
+
+      {/* PROBLEM / WHY NOW */}
+      <section id="pitch">
+        <div className="wrap">
+          <div className="eyebrow">01 — The Problem &amp; Why Now</div>
+          <h2>
+            A global customer base, <span className="it">barely reached.</span>
+          </h2>
+          <p className="section-lede">
+            Bangladeshi D2C brands aren&apos;t just competing for local buyers
+            anymore — they&apos;re sitting on a global customer base they barely
+            touch.
+          </p>
+
+          <div className="stats reveal">
+            <div className="stat">
+              <div className="n">13M+</div>
+              <div className="l">Bangladeshis abroad</div>
+            </div>
+            <div className="stat">
+              <div className="n">3–10×</div>
+              <div className="l">Higher diaspora order value</div>
+            </div>
+            <div className="stat">
+              <div className="n">2,400+</div>
+              <div className="l">Bangladeshi D2C brands</div>
+            </div>
+            <div className="stat">
+              <div className="n">0</div>
+              <div className="l">Culturally-aware tools</div>
+            </div>
+          </div>
+
+          <p className="body" style={{ marginTop: 34 }}>
+            Over <strong>13 million Bangladeshis live abroad</strong>, and
+            diaspora communities across emerging markets keep spending on products
+            that connect them back to home. These customers carry stronger
+            emotional buying intent and average order values{" "}
+            <strong>3–10× higher</strong> than local buyers — yet most home-country
+            brands miss them completely. Today, <strong>2,400+ Bangladeshi fashion,
+            food and lifestyle brands</strong> still market as if their only
+            audience lives in Bangladesh: local content, Bangladesh hours, local
+            assumptions. A brand may have 24,000 followers but reach only{" "}
+            <strong>312 engaged users in London or 89 in New York per week.</strong>
+          </p>
+
+          <p className="body">
+            The problem isn&apos;t demand — it&apos;s that brands have{" "}
+            <strong>no system to identify, understand and convert their diaspora
+            customers.</strong> A Bangladeshi mother in Toronto, a Gen-Z student in
+            Dhaka, and an expat professional in Dubai may all love the same brand,
+            but they don&apos;t respond to the same message, timing, language or
+            emotional trigger. A Pohela Boishakh campaign for someone in Sylhet
+            can&apos;t be copy-pasted for someone in Sydney.
+          </p>
+
+          <p className="body">
+            Generic AI tools can&apos;t close this gap. They generate captions, but
+            they don&apos;t understand a brand&apos;s real voice, Bangla-English
+            code-switching, diaspora shopping behavior, timezone-based peak buying
+            windows, or the emotional pull of home. There is still no
+            culturally-aware marketing intelligence tool built for this category —{" "}
+            <strong>and that&apos;s the gap Deshly is solving.</strong>
+          </p>
+
+          <p className="body" style={{ marginTop: 24, color: "var(--cream)" }}>
+            <strong>Why now —</strong> open-weight LLMs made high-quality generation
+            cheap, vector databases made brand memory trivial, and the Model Context
+            Protocol made AI capabilities composable across every agent. The
+            infrastructure for culturally-intelligent commerce tooling only became
+            affordable in the last 18 months. Deshly is built natively on it.
+          </p>
+        </div>
+      </section>
+
+      {/* SOLUTION / PRODUCT */}
+      <section id="product">
+        <div className="wrap">
+          <div className="eyebrow">02 — Solution &amp; Product</div>
+          <h2>
+            Three steps from captions to{" "}
+            <span className="it">culture-fit campaigns.</span>
+          </h2>
+          <p className="section-lede">
+            A brand owner needs no marketing team and no data science. Paste,
+            describe, generate.
+          </p>
+          <div className="flow reveal">
+            <div className="step">
+              <div className="k">STEP 01</div>
+              <h4>Brand DNA</h4>
+              <p>
+                Paste 10 existing captions. Deshly extracts a structured voice
+                profile — tone, signature words, even Bangla-English
+                code-switching — and stores it as a vector embedding.
+              </p>
+            </div>
+            <div className="step">
+              <div className="k">STEP 02</div>
+              <h4>Audience Match</h4>
+              <p>
+                Describe a product. The engine ranks local and diaspora clusters
+                across four dimensions and explains, in plain language, why each
+                audience will connect.
+              </p>
+            </div>
+            <div className="step">
+              <div className="k">STEP 03</div>
+              <h4>Generate</h4>
+              <p>
+                One click produces a full campaign per audience: caption, image
+                prompts, reels storyboard, WhatsApp broadcast, hashtags and
+                posting time — in the right language and timezone.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PRODUCT OVERVIEW */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">03 — Product Overview</div>
+          <h2>
+            What it does, <span className="it">for whom.</span>
+          </h2>
+          <div className="grid3" style={{ marginTop: 8 }}>
+            <div className="card reveal">
+              <h3>Target users</h3>
+              <p>
+                Founders and marketers at emerging-market D2C brands — fashion,
+                food, lifestyle — who sell at home and want to reach their
+                diaspora without losing cultural authenticity.
+              </p>
+              <span className="tag">Primary</span>
+              <span className="tag">Agencies (Phase 2)</span>
+            </div>
+            <div className="card reveal">
+              <h3>Core use case</h3>
+              <p>
+                Turn one product into several culturally-tuned, multi-channel
+                campaigns — each aimed at a specific community, written in their
+                language mix, scheduled for their timezone.
+              </p>
+              <span className="tag">Multimodal output</span>
+            </div>
+            <div className="card reveal">
+              <h3>The surfaces</h3>
+              <p>
+                Four product pages: <b>/brand-dna</b> voice extraction,{" "}
+                <b>/generator</b> matching + generation, <b>/clusters</b>{" "}
+                interactive diaspora map, <b>/docs</b> this living whitepaper.
+              </p>
+              <span className="tag">Live</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURE MATRIX */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">04 — Feature Matrix</div>
+          <h2>
+            Built, building, <span className="it">planned.</span>
+          </h2>
+          <div className="scrollx">
+            <table className="matrix reveal">
+              <thead>
+                <tr>
+                  <th>Capability</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Brand voice extraction</td>
+                  <td>
+                    7-field structured profile + 1536-dim embedding from raw
+                    captions
+                  </td>
+                  <td>
+                    <span className="badge live">Live</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Cluster matching</td>
+                  <td>13 clusters scored across 4 dimensions with emotional insight</td>
+                  <td>
+                    <span className="badge live">Live</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Multimodal generation</td>
+                  <td>Caption, image prompts, reels, WhatsApp, hashtags, timing</td>
+                  <td>
+                    <span className="badge live">Live</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Multi-LLM fallback</td>
+                  <td>Groq → Together → Gemini → local Ollama</td>
+                  <td>
+                    <span className="badge live">Live</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>3 MCP servers</td>
+                  <td>DiasporaGraph, BrandVoice, CampaignGenerator</td>
+                  <td>
+                    <span className="badge live">Live</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Interactive diaspora map</td>
+                  <td>Leaflet cluster explorer with cultural detail panels</td>
+                  <td>
+                    <span className="badge live">Live</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Onboarding &amp; auth</td>
+                  <td>
+                    Email + OAuth sign-up, brand workspaces (disabled for judging,
+                    shipping in production)
+                  </td>
+                  <td>
+                    <span className="badge soon">Phase 2</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Native image generation</td>
+                  <td>Replicate / Fal.ai → rendered images, not prompts</td>
+                  <td>
+                    <span className="badge soon">Phase 2</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Direct publishing</td>
+                  <td>Buffer / Hootsuite / Meta Business scheduling</td>
+                  <td>
+                    <span className="badge soon">Phase 2</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Closed-loop learning</td>
+                  <td>Reconcile predicted vs actual engagement, retrain</td>
+                  <td>
+                    <span className="badge plan">Phase 3</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Automated cluster discovery</td>
+                  <td>Signal scraping → embedding → unsupervised clustering</td>
+                  <td>
+                    <span className="badge plan">Phase 3</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
       {/* ARCHITECTURE */}
-      <Section icon={Network} title="ARCHITECTURE">
-      <div className="bg-ink-deep border border-cream/8 rounded-2xl sm:rounded-3xl p-4 sm:p-8 font-mono text-[9px] sm:text-[11px] text-cream/85 leading-relaxed overflow-x-auto relative">
-          <div
-            className="absolute top-0 left-0 right-0 h-px"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, rgba(184, 149, 106, 0.4), transparent)",
-            }}
-          />
-          <pre className="whitespace-pre">{`┌──────────────────────────────────────────────────────────────────┐
-│                       USER INTERFACE                              │
-│   Brand DNA · Generator · Cluster Map · /docs                     │
-│   Next.js 16 (App Router) · Tailwind v4 · Framer Motion + GSAP    │
-└─────────────────────────┬────────────────────────────────────────┘
-                          │
-┌─────────────────────────▼────────────────────────────────────────┐
-│                      API LAYER (Next.js Routes)                   │
-│   /api/extract-brand-voice    /api/match-clusters                 │
-│   /api/generate-campaign      /api/clusters-list                  │
-│   /api/system-status                                              │
-└─────────────────────────┬────────────────────────────────────────┘
-                          │
-              ┌───────────┼───────────────────┐
-              │           │                   │
-   ┌──────────▼──┐  ┌─────▼──────┐  ┌────────▼────────┐
-   │   LLM       │  │ HYBRID RAG │  │  MCP SERVERS    │
-   │  ROUTER     │  │            │  │                 │
-   │             │  │ Naive RAG  │  │ DiasporaGraph   │
-   │ 1. Groq     │  │ Vector RAG │  │ BrandVoice      │
-   │ 2. Together │  │ Hybrid FTS │  │ CampaignGen     │
-   │ 3. Gemini   │  │ Graph RAG  │  │                 │
-   │ 4. Ollama   │  │ (DiaspGph) │  │                 │
-   └──────┬──────┘  └─────┬──────┘  └────────┬────────┘
-          │               │                  │
-          └───────────────┼──────────────────┘
-                          │
-              ┌───────────▼────────────┐
-              │   SUPABASE (Postgres)  │
-              │   pgvector · GIN FTS   │
-              │                        │
-              │   brands · clusters    │
-              │   brand_voices         │
-              │   campaigns            │
-              │   ingestion_logs       │
-              └────────────────────────┘`}</pre>
-        </div>
-      </Section>
-
-      {/* LLM STACK */}
-      <Section icon={Cpu} title="LLM STACK · MULTI-PROVIDER FALLBACK">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {[
-            { name: "Llama 3.3 70B (Groq)", role: "Primary — extraction + generation", status: "active" as const },
-            { name: "Llama 3.3 70B Turbo (Together AI)", role: "Fallback #1 — same quality, different infra", status: "active" as const },
-            { name: "Gemini 2.0 Flash", role: "Fallback #2 + embeddings (text-embedding-004)", status: "active" as const },
-            { name: "Phi-3 Mini (Ollama, local)", role: "Caption pre-screening, on-device fallback (2.2GB, runs locally)", status: "active" as const },
-            { name: "Llama 3 8B (Ollama, local)", role: "Optional higher-quality local model (pull on demand)", status: "ready" as const },
-          ].map((m) => (
-            <div
-              key={m.name}
-              className="bg-ink border border-cream/8 rounded-2xl p-5 hover:border-brass/25 transition-all"
-            >
-              <div className="flex items-start justify-between mb-2 gap-3">
-                <div className="font-medium text-sm text-cream">{m.name}</div>
-                <StatusBadge status={m.status} />
-              </div>
-              <div className="text-xs text-cream/55 leading-relaxed">{m.role}</div>
-            </div>
-          ))}
-        </div>
-        <Note>
-          Provider chain: Groq → Together → Gemini → Ollama (local). First success wins. Logged to console for observability. Multi-provider failover means a single LLM outage cannot break Deshly.
-        </Note>
-      </Section>
-
-      {/* RAG TECHNIQUES */}
-      <Section icon={Database} title="RETRIEVAL & RAG · 4 TECHNIQUES">
-        <div className="space-y-3">
-          {[
-            { name: "Naive RAG", desc: "Caption chunk → Gemini embed (768d) → store. Used during brand DNA extraction." },
-            { name: "Vector Database (pgvector)", desc: "ivfflat index with cosine similarity. Brand voice embeddings searchable for similar-brand discovery." },
-            { name: "Hybrid Search (Postgres FTS + Vector)", desc: "GIN index on caption tsvector + ivfflat on embeddings. Query both, merge rankings." },
-            { name: "Graph RAG (DiasporaGraph)", desc: "Cluster matching traverses cluster attribute graph — currency × occasion × aesthetic × channel × AOV — to score product fit." },
-          ].map((r, i) => (
-            <div
-              key={r.name}
-              className="bg-ink border border-cream/8 rounded-2xl p-5 hover:border-brass/25 transition-all relative overflow-hidden group"
-            >
-              <div
-                className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-terracotta to-brass opacity-0 group-hover:opacity-100 transition-opacity"
-              />
-              <div className="flex items-center gap-3 mb-2">
-                <span className="font-mono text-[10px] text-brass">0{i + 1}</span>
-                <div className="font-medium text-sm text-cream">{r.name}</div>
-              </div>
-              <div className="text-xs text-cream/55 leading-relaxed pl-7">{r.desc}</div>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* MCP SERVERS */}
-      <Section icon={Server} title="MCP SERVERS · 3 BUILT, 3 USED">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          <div className="bg-gradient-to-br from-terracotta/10 to-transparent border border-terracotta/25 rounded-2xl p-6 relative overflow-hidden">
-            <div
-              className="absolute top-0 left-0 right-0 h-px"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, rgba(213, 97, 62, 0.5), transparent)",
-              }}
-            />
-            <div className="text-[10px] uppercase tracking-[0.18em] text-terracotta mb-4 font-medium">
-              ▸ BUILT BY US
-            </div>
-            <div className="space-y-3.5 text-sm">
-              <McpItem
-                name="DiasporaGraph MCP"
-                tools="list_clusters · match_clusters_to_product · get_cluster_intelligence"
-              />
-              <McpItem
-                name="BrandVoice MCP"
-                tools="extract_brand_voice · score_against_brand · get_brand_profile"
-              />
-              <McpItem
-                name="CampaignGenerator MCP"
-                tools="generate_diaspora_campaign · simulate_outcomes · generate_image_prompts"
-              />
-            </div>
+      <section id="architecture">
+        <div className="wrap">
+          <div className="eyebrow">05 — System Architecture</div>
+          <h2>
+            UI → API → Services → <span className="it">Data.</span>
+          </h2>
+          <p className="section-lede">
+            Synchronous where the user waits; resilient at every external
+            dependency.
+          </p>
+          <div className="diagram reveal">
+            <pre>{`   ┌─────────────────────────── CLIENT (Next.js 16 App Router) ──────────────────────────┐
+   │   /brand-dna        /generator         /clusters          /docs                     │
+   └──────────────────────────────────────┬───────────────────────────────────────────────┘
+                                          │  fetch (REST)
+   ┌──────────────────────────────────────▼───────────────────────────────────────────────┐
+   │   API ROUTES   /api/extract-brand-voice   /api/match-clusters   /api/generate-campaign │
+   └───────────┬───────────────────────────────────────────────────────┬───────────────────┘
+               │                                                       │
+       ┌───────────▼───────────┐                              ┌────────────▼────────────┐
+       │  LLM ORCHESTRATOR     │                              │   MCP SERVERS (×3)       │
+       │  Groq → Together →    │                              │   DiasporaGraph          │
+       │  Gemini → Ollama      │                              │   BrandVoice             │
+       │  retry + backoff      │                              │   CampaignGenerator      │
+       └───────────┬───────────┘                              └────────────┬────────────┘
+                   │  embeddings + inference                            │ stdio / HTTP
+       ┌───────────▼────────────────────────────────────────────────────────▼────────────────┐
+       │   SUPABASE — PostgreSQL + pgvector                                                  │
+       │   brands · brand_voices(embedding) · clusters · campaigns · ingestion_logs          │
+       └───────────────────────────────────────────────────────────────────────────────────────┘
+                   ▲
+       ┌───────────┴───────────┐
+       │  Reddit scraper       │  community signals → cluster confidence
+       └───────────────────────┘`}</pre>
           </div>
-          <div className="bg-ink border border-cream/8 rounded-2xl p-6">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-cream/50 mb-4 font-medium">
-              ▸ USED FROM ECOSYSTEM
+        </div>
+      </section>
+
+      {/* DATA FLOW */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">06 — Data Flow</div>
+          <h2>
+            Input → Processing → AI → Output →{" "}
+            <span className="it">Feedback.</span>
+          </h2>
+          <div className="grid3" style={{ marginTop: 8 }}>
+            <div className="card reveal">
+              <h3>
+                <span className="num">→</span>Input
+              </h3>
+              <p>
+                Brand captions and a product description. Validated and sanitized
+                server-side (100–20,000 chars, ≥10 caption blocks).
+              </p>
             </div>
-            <div className="space-y-3.5 text-sm">
-              <McpItem name="Postgres MCP" tools="Database introspection during build" muted />
-              <McpItem name="Filesystem MCP" tools="Cluster seed data loading" muted />
-              <McpItem name="Playwright MCP" tools="Reddit / Daraz scraper agent control" muted />
+            <div className="card reveal">
+              <h3>
+                <span className="num">→</span>Processing
+              </h3>
+              <p>
+                Captions compacted to a 5-field voice payload; clusters trimmed to
+                11 fields. Context built for the LLM as structured knowledge.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>
+                <span className="num">→</span>AI
+              </h3>
+              <p>
+                Multi-LLM inference + pgvector retrieval. Strict JSON output,
+                schema-validated, banned-phrase enforced.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>
+                <span className="num">→</span>Output
+              </h3>
+              <p>
+                Ranked audiences and multimodal campaign packages rendered in-app,
+                one click to copy the full package.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>
+                <span className="num">→</span>Feedback <span className="tag">Phase 2</span>
+              </h3>
+              <p>
+                Published-campaign metrics pulled from Meta Insights, reconciled
+                against predictions.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>
+                <span className="num">→</span>Learning <span className="tag">Phase 3</span>
+              </h3>
+              <p>
+                Reconciliation data trains a model that sharpens future predictions
+                — AI that improves over time.
+              </p>
             </div>
           </div>
         </div>
-        <Note>
-          MCP servers expose Deshly as a tool any AI agent (Claude Desktop, Cursor, etc.) can call. Built on @modelcontextprotocol/sdk v0.6.0.
-        </Note>
-      </Section>
+      </section>
 
-      {/* API ENDPOINTS */}
-      <Section icon={Zap} title="API ENDPOINTS · 5 LIVE ROUTES">
-      <div className="bg-ink-deep border border-cream/8 rounded-2xl sm:rounded-3xl p-5 sm:p-7 font-mono text-[11px] sm:text-xs space-y-4 relative overflow-hidden">
-          <div
-            className="absolute top-0 left-0 right-0 h-px"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, rgba(213, 97, 62, 0.4), transparent)",
-            }}
-          />
-          <Endpoint
-            method="POST"
-            path="/api/extract-brand-voice"
-            desc="Extracts structured brand voice profile (tone, vocabulary, language mix, cultural register) from 10 captions. Embeds full voice as 768-dim vector. Saves to brand_voices table."
-          />
-          <Endpoint
-            method="POST"
-            path="/api/match-clusters"
-            desc="Graph RAG cluster ranking. Takes product description + brand voice ID. LLM traverses 13 cluster attribute graph and returns top-N matches with reasoning."
-          />
-          <Endpoint
-            method="POST"
-            path="/api/generate-campaign"
-            desc="Generates 3 complete campaign packages in parallel (Promise.all). Each: caption + image prompts × 3 models + reels storyboard + hashtags + WhatsApp message + posting time + confidence-ranged outcome prediction."
-          />
-          <Endpoint
-            method="GET"
-            path="/api/clusters-list"
-            desc="Returns all 13 clusters sorted by estimated size. Powers Cluster Explorer map."
-          />
-          <Endpoint
-            method="GET"
-            path="/api/system-status"
-            desc="Live counts across all 5 production tables. Powers the live system status grid above."
-          />
-        </div>
-      </Section>
-
-      {/* DATABASE SCHEMA */}
-      <Section icon={Database} title="DATABASE SCHEMA · POSTGRES 16 + pgvector">
-      <div className="bg-ink border border-cream/8 rounded-2xl sm:rounded-3xl p-5 sm:p-7 font-mono text-[11px] sm:text-xs space-y-5 overflow-x-auto">
-          <SchemaTable
-            name="brands"
-            cols="id uuid · name text · website_url text · industry text · created_at timestamptz"
-          />
-          <SchemaTable
-            name="brand_voices"
-            cols={
-              <>
-                id uuid · brand_id uuid → brands · voice_profile jsonb · voice_strength_score numeric ·{" "}
-                <span className="text-cream font-medium">embedding vector(768)</span> · raw_captions text · extracted_by text · created_at timestamptz
-              </>
-            }
-            note="ivfflat index on embedding · GIN FTS index on captions tsvector"
-          />
-          <SchemaTable
-            name="clusters"
-            cols={
-              <>
-                id text · segment_type text · country text · city text · age_band text · estimated_size int · primary_occasions text[] ·{" "}
-                <span className="text-cream font-medium">channel_preferences jsonb</span> · language_mix text · currency text · avg_order_value_min int · avg_order_value_max int · peak_shopping_windows jsonb · typical_engagement_rate numeric · engagement_std_dev numeric · gift_giving_pattern text · shipping_complexity text · aesthetic_preference text · cultural_notes text · latitude numeric · longitude numeric · data_sources text[] · confidence_score numeric
-              </>
-            }
-            note="13 rows seeded (8 diaspora + 5 local Bangladesh)"
-          />
-          <SchemaTable
-            name="campaigns"
-            cols="id uuid · brand_voice_id uuid → brand_voices · cluster_id text → clusters · product_description text · caption text · image_prompts jsonb · reels_storyboard jsonb · hashtags text[] · whatsapp_message text · posting_time text · channel_recommendation text · predicted_reach_min int · predicted_reach_max int · predicted_engagement_min numeric · predicted_engagement_max numeric · reasoning_trace text · generated_by text · created_at timestamptz"
-          />
-          <SchemaTable
-            name="ingestion_logs"
-            cols="id uuid · source text · records_pulled int · status text · error_message text · created_at timestamptz"
-            note="Scraper writes here on every run for observability"
-          />
-        </div>
-      </Section>
-
-      {/* AGENTS & WORKFLOWS */}
-      <Section icon={GitBranch} title="AGENTS & WORKFLOW AUTOMATION">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="bg-gradient-to-br from-brass/10 to-transparent border border-brass/25 rounded-2xl p-6">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-brass mb-3 font-medium">
-              LANGGRAPH AGENT FLOW
+      {/* TECH STACK */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">07 — Technology Stack</div>
+          <h2>
+            Open-source first, <span className="it">no lock-in.</span>
+          </h2>
+          <div style={{ marginTop: 8 }}>
+            <div className="stack-label">Frontend</div>
+            <div className="stack-row">
+              <span className="chip">Next.js 16.2.4</span>
+              <span className="chip">React 19</span>
+              <span className="chip">Tailwind v4</span>
+              <span className="chip">Framer Motion</span>
+              <span className="chip">GSAP</span>
+              <span className="chip">Lenis</span>
+              <span className="chip">Leaflet</span>
+              <span className="chip">Lucide</span>
             </div>
-            <div className="font-medium text-sm mb-3 text-cream">Campaign Generation Pipeline</div>
-            <div className="text-xs text-cream/65 leading-relaxed">
-              Multi-step agent orchestration:{" "}
-              <span className="text-brass">extract</span> →{" "}
-              <span className="text-brass">match</span> →{" "}
-              <span className="text-brass">generate (parallel × 3)</span> →{" "}
-              <span className="text-brass">critique (Soul Score)</span> →{" "}
-              <span className="text-brass">persist</span>. Each step is a discrete node with retry logic and provider failover. State persists across the chain.
+            <div className="stack-label">Backend &amp; Data</div>
+            <div className="stack-row">
+              <span className="chip">Supabase</span>
+              <span className="chip">PostgreSQL</span>
+              <span className="chip">pgvector</span>
+              <span className="chip">supabase-js</span>
             </div>
-          </div>
-          <div className="bg-ink border border-cream/8 rounded-2xl p-6">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-cream/50 mb-3 font-medium">
-              N8N WORKFLOWS · SELF-HOSTED
+            <div className="stack-label">AI &amp; Protocol</div>
+            <div className="stack-row">
+              <span className="chip">Groq · Llama 3.3 70B</span>
+              <span className="chip">Together AI</span>
+              <span className="chip">Gemini 2.0 Flash</span>
+              <span className="chip">Ollama</span>
+              <span className="chip">@modelcontextprotocol/sdk</span>
             </div>
-            <div className="font-medium text-sm mb-3 text-cream">3 Scheduled Pipelines</div>
-            <div className="text-xs text-cream/65 leading-relaxed space-y-1.5">
-              <div>
-                <strong className="text-cream">Weekly Reddit Sync ·</strong> triggers reddit-scraper.js, updates ingestion_logs, alerts on failure.
-              </div>
-              <div>
-                <strong className="text-cream">Daily Health Check ·</strong> pings all LLM providers, logs which are healthy.
-              </div>
-              <div>
-                <strong className="text-cream">Cluster Refresh ·</strong> recomputes derived metrics from raw ingestion data.
-              </div>
+            <div className="stack-label">Ingestion &amp; Infra</div>
+            <div className="stack-row">
+              <span className="chip">Snoowrap</span>
+              <span className="chip">Vercel</span>
+              <span className="chip">GitHub CI</span>
+              <span className="chip">TypeScript</span>
             </div>
           </div>
         </div>
-        <Note>
-          Agents handle smart sequential reasoning; n8n handles reliable scheduling. Right tool, right job.
-        </Note>
-      </Section>
+      </section>
 
-      {/* DATA PIPELINE */}
-      <Section icon={TrendingUp} title="DATA PIPELINE">
-        <div className="bg-ink border border-cream/8 rounded-3xl p-7 space-y-5">
-          <PipelineRow
-            title="Cluster intelligence"
-            desc="v1: Hand-curated knowledge graph. 13 clusters, internally consistent attributes from public diaspora demographics + observed marketing patterns. Confidence scores 0.78–0.90."
-            status="ACTIVE"
-            statusColor="terracotta"
-          />
-          <Divider />
-          <PipelineRow
-            title="Live ingestion (Reddit scraper)"
-            desc="Public JSON API scraper across r/bangladesh, r/dhaka, r/ABCDesis, r/londonbangladeshis. Filters posts by 20+ Bangla/diaspora keywords (eid, panjabi, saree, jamdani, pohela boishakh, etc). Writes ingestion logs with status + record count to Supabase. Last run: 21 relevant posts from 150 total scanned."
-            status="ACTIVE · WEEKLY SCHEDULE"
-            statusColor="green"
-          />
-          <Divider />
-          <PipelineRow
-            title="Meta Ads Library ingestion"
-            desc="Public Bangladeshi advertiser ads targeting UK/UAE/Canada. Provides creative benchmarks per cluster."
-            status="PLANNED · WEEK-2 POST-PRELIM"
-            statusColor="amber"
-          />
-          <Divider />
-          <PipelineRow
-            title="Brand design partners"
-            desc="Direct integrations with 2-3 Bangladeshi D2C brands' Meta Business Manager (read-only). Calibrates outcome simulator with real campaign data."
-            status="OUTREACH · WEEK-3 POST-PRELIM"
-            statusColor="amber"
-          />
-        </div>
-      </Section>
-
-      {/* GUARDRAILS */}
-      <Section icon={Shield} title="GUARDRAILS & EVALUATION">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {[
-            { name: "Zod schema validation", desc: "All API inputs/outputs typed and runtime-validated" },
-            { name: "PII scrubbing", desc: "Caption ingestion strips identifying details before storage" },
-            { name: "Multi-provider failover", desc: "Single LLM outage doesn't break the system" },
-            { name: "Soul Score critic", desc: "Generated output validated against brand voice before display" },
-            { name: "Confidence-ranged predictions", desc: "Outcome ranges with reasoning, not magic numbers" },
-            { name: "Output truncation guards", desc: "Max token limits prevent runaway generations" },
-          ].map((g) => (
-            <div
-              key={g.name}
-              className="bg-ink border border-cream/8 rounded-2xl p-5 hover:border-brass/25 transition-all"
-            >
-              <div className="font-medium text-sm mb-1.5 text-cream">{g.name}</div>
-              <div className="text-xs text-cream/55 leading-relaxed">{g.desc}</div>
+      {/* API DOCS */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">08 — API Documentation</div>
+          <h2>
+            Endpoints <span className="it">exposed.</span>
+          </h2>
+          <p className="section-lede">
+            REST routes consumed by the UI; the same logic is exposed as MCP tools
+            for any agent.
+          </p>
+          <div className="reveal">
+            <div className="endpoint">
+              <span className="method">POST</span>
+              <span className="path">/api/extract-brand-voice</span>
+              <span className="desc">
+                Input: captions, brandName → structured BrandVoiceProfile +
+                brandVoiceId + embedding.
+              </span>
             </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* STACK */}
-      <Section icon={Zap} title="STACK">
-        <div className="bg-ink border border-cream/8 rounded-3xl p-7">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-7 text-xs">
-            <StackCol
-              title="Frontend"
-              items={[
-                "Next.js 16 (App Router)",
-                "React 18",
-                "Tailwind CSS v4",
-                "Framer Motion + GSAP",
-                "Lenis smooth scroll",
-                "Leaflet + OpenStreetMap",
-                "Lucide Icons",
-              ]}
-            />
-            <StackCol
-              title="Backend"
-              items={[
-                "Supabase (Postgres 16)",
-                "pgvector extension",
-                "GIN full-text index",
-                "Next.js API routes",
-                "Zod validation",
-                "MCP SDK",
-              ]}
-            />
-            <StackCol
-              title="AI / LLMs"
-              items={[
-                "Groq (Llama 3.3 70B)",
-                "Together AI (Llama Turbo)",
-                "Google Gemini 2.0 Flash",
-                "Ollama (Phi-3, local)",
-                "Gemini text-embedding-004",
-                "LangGraph (orchestration)",
-                "n8n (workflows)",
-              ]}
-            />
+            <div className="endpoint">
+              <span className="method">POST</span>
+              <span className="path">/api/match-clusters</span>
+              <span className="desc">
+                Input: productDescription, brandVoiceId → ranked clusters with
+                score breakdown, tier labels and insights.
+              </span>
+            </div>
+            <div className="endpoint">
+              <span className="method">POST</span>
+              <span className="path">/api/generate-campaign</span>
+              <span className="desc">
+                Input: brandVoiceId, productDescription, clusterIds → complete
+                multimodal campaign packages.
+              </span>
+            </div>
+            <div className="endpoint">
+              <span className="method get">GET</span>
+              <span className="path">/api/clusters-list</span>
+              <span className="desc">All 13 cluster profiles for the diaspora map.</span>
+            </div>
+            <div className="endpoint">
+              <span className="method get">GET</span>
+              <span className="path">/api/system-status</span>
+              <span className="desc">Health across LLM providers and Supabase.</span>
+            </div>
           </div>
         </div>
-      </Section>
+      </section>
 
-      {/* FOOTER METADATA */}
-      <div className="border-t border-cream/8 pt-7 flex flex-col md:flex-row md:justify-between gap-3 text-[10px] uppercase tracking-[0.18em] text-cream/40 font-mono">
-        <div>Deshly v1 · BuildFest 2026 MVP · Last updated: build-time</div>
-        <div>Built in Dhaka · For the diaspora</div>
-      </div>
-    </ProductShell>
-  );
-}
-
-// ============================================================================
-// PRIMITIVES
-// ============================================================================
-function Section({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon: any;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mb-14">
-      <div className="flex items-center gap-3 mb-6">
-        <span className="w-8 h-px bg-brass" />
-        <Icon className="w-3.5 h-3.5 text-terracotta" strokeWidth={1.75} />
-        <h2 className="text-[10px] uppercase tracking-[0.2em] text-brass font-medium">
-          {title}
-        </h2>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function Note({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="text-xs text-cream/45 mt-4 italic leading-relaxed">
-      {children}
-    </div>
-  );
-}
-
-function StatusBadge({ status }: { status: "active" | "ready" }) {
-  return (
-    <div
-      className={`text-[9px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-full font-medium border flex items-center gap-1.5 flex-shrink-0 ${
-        status === "active"
-          ? "border-green-500/30 text-green-400 bg-green-500/10"
-          : "border-amber-500/30 text-amber-400 bg-amber-500/10"
-      }`}
-    >
-      <span
-        className={`w-1 h-1 rounded-full ${
-          status === "active" ? "bg-green-400 animate-pulse" : "bg-amber-400"
-        }`}
-      />
-      {status}
-    </div>
-  );
-}
-
-function McpItem({ name, tools, muted = false }: { name: string; tools: string; muted?: boolean }) {
-  return (
-    <div className="flex items-start gap-2.5">
-      <CheckCircle2
-        className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${
-          muted ? "text-cream/40" : "text-terracotta"
-        }`}
-        strokeWidth={1.75}
-      />
-      <div>
-        <div className={`font-medium text-sm ${muted ? "text-cream/85" : "text-cream"}`}>
-          {name}
+      {/* AI LAYER */}
+      <section id="ai">
+        <div className="wrap">
+          <div className="eyebrow">09 — AI Layer</div>
+          <h2>
+            Not a wrapper. <span className="it">Infrastructure.</span>
+          </h2>
+          <div className="grid2" style={{ marginTop: 8 }}>
+            <div className="card reveal">
+              <h3>Multi-LLM resilience</h3>
+              <p>
+                A four-provider fallback chain — Groq Llama 3.3 70B, Together,
+                Gemini, local Ollama — with retry and backoff. No single point of
+                failure; works even offline.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>RAG over structured knowledge</h3>
+              <p>
+                Brand voice embedded in pgvector (1536-dim, IVFFlat). Retrieval
+                augments generation with typed cluster profiles rather than chunked
+                documents — in-context graph reasoning over relationships.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>Prompt engineering</h3>
+              <p>
+                Contrast-aware voice analysis, strategist-framed matching, a 28-term
+                banned-phrase blocklist, forced score spread and self-check rubrics.
+                ~48% token reduction vs naive prompts.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>MCP-first composability</h3>
+              <p>
+                Three custom MCP servers expose every capability as agent-callable
+                tools (stdio + Streamable HTTP). Deshly runs inside Claude Desktop,
+                Cursor, or any MCP host.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>Explainability</h3>
+              <p>
+                Every match returns a plain-language &quot;why this works.&quot;
+                Predictions are anchored to real cluster baselines, not invented —
+                and surfaced as qualitative labels, not raw noise.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>Personalization</h3>
+              <p>
+                Output is conditioned on the brand&apos;s own voice profile + the
+                audience cluster&apos;s culture, language mix and timezone — so one
+                product becomes several distinct, on-brand campaigns.
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="text-[11px] text-cream/45 font-mono leading-relaxed">{tools}</div>
-      </div>
-    </div>
-  );
-}
+      </section>
 
-function Endpoint({ method, path, desc }: { method: "GET" | "POST"; path: string; desc: string }) {
-  return (
-    <div className="border-l-2 border-cream/8 pl-4 first:border-l-0 first:pl-0">
-      <div className="flex items-center gap-3">
-        <span
-          className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-            method === "POST"
-              ? "bg-terracotta text-cream"
-              : "bg-brass/80 text-ink"
-          }`}
-        >
-          {method}
-        </span>
-        <span className="text-cream font-mono">{path}</span>
-      </div>
-      <div className="text-cream/55 mt-1.5 leading-relaxed pl-0 sm:pl-12">{desc}</div>
-    </div>
-  );
-}
-
-function SchemaTable({
-  name,
-  cols,
-  note,
-}: {
-  name: string;
-  cols: React.ReactNode;
-  note?: string;
-}) {
-  return (
-    <div className="border-l-2 border-terracotta/30 pl-4">
-      <div className="text-terracotta font-bold mb-1.5">{name}</div>
-      <div className="text-cream/60 leading-relaxed">{cols}</div>
-      {note && (
-        <div className="text-[10px] text-brass mt-2 flex items-center gap-1.5">
-          <span>↳</span>
-          <span>{note}</span>
+      {/* MARKET / BUSINESS / EDGE */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">10 — Market, Model &amp; Edge</div>
+          <h2>
+            Where the value <span className="it">compounds.</span>
+          </h2>
+          <div className="grid3" style={{ marginTop: 8 }}>
+            <div className="card reveal">
+              <h3>Market</h3>
+              <p>
+                Bangladesh diaspora is the wedge; the architecture is
+                country-agnostic. India, Pakistan, Nigeria, Vietnam, Mexico — every
+                emerging market has a diaspora its brands underserve.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>Business model</h3>
+              <p>
+                Freemium SaaS. Free: 5 campaigns/mo. Pro ~$29/mo: 100 campaigns.
+                Enterprise: unlimited + self-host + MCP access. Target 70%+ gross
+                margin.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>Unique advantage</h3>
+              <p>
+                The moat is the prompts, the cultural cluster model, and the
+                MCP-first protocol design — not the framework. The UI is rebuildable
+                in weeks; the intelligence is not.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>Competition</h3>
+              <p>
+                Generic AI writers (Jasper, Copy.ai) ignore culture and audience.
+                Social schedulers (Buffer) don&apos;t generate. Deshly is the only
+                culturally-aware, audience-first, multimodal engine for this segment.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>Go-to-market</h3>
+              <p>
+                Direct to Bangladeshi D2C founders via the communities they already
+                live in; agency partnerships as a multi-brand wedge; MCP registry for
+                developer distribution.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>Traction</h3>
+              <p>
+                Working product across 4 surfaces, 3 MCP servers, multi-LLM
+                resilience and a live diaspora map — built and deployed within the
+                BuildFest window.
+              </p>
+            </div>
+          </div>
         </div>
-      )}
-    </div>
-  );
-}
+      </section>
 
-function PipelineRow({
-  title,
-  desc,
-  status,
-  statusColor,
-}: {
-  title: string;
-  desc: string;
-  status: string;
-  statusColor: "terracotta" | "green" | "amber";
-}) {
-  const colorClasses = {
-    terracotta: "text-terracotta",
-    green: "text-green-400",
-    amber: "text-amber-400",
-  };
-  return (
-    <div>
-      <div className="font-medium text-sm mb-1.5 text-cream">{title}</div>
-      <div className="text-xs text-cream/55 leading-relaxed mb-2">{desc}</div>
-      <div className={`text-[10px] uppercase tracking-[0.18em] font-mono ${colorClasses[statusColor]}`}>
-        Status: {status}
-      </div>
-    </div>
-  );
-}
+      {/* ROADMAP */}
+      <section id="roadmap">
+        <div className="wrap">
+          <div className="eyebrow">11 — Product Roadmap</div>
+          <h2>
+            Short, mid, <span className="it">long.</span>
+          </h2>
+          <div className="road reveal">
+            <div className="col">
+              <div className="when">Now — MVP</div>
+              <ul>
+                <li>Brand DNA extraction</li>
+                <li>13-cluster matching</li>
+                <li>Multimodal generation</li>
+                <li>3 MCP servers</li>
+                <li>Diaspora map</li>
+              </ul>
+            </div>
+            <div className="col">
+              <div className="when">3–6 Months</div>
+              <ul>
+                <li>5 countries, 80+ clusters</li>
+                <li>Native image generation</li>
+                <li>Direct publishing integrations</li>
+                <li>RLS multi-tenant workspaces</li>
+                <li>Performance reconciliation</li>
+              </ul>
+            </div>
+            <div className="col">
+              <div className="when">12 Months</div>
+              <ul>
+                <li>20+ markets</li>
+                <li>Closed-loop learning model</li>
+                <li>Automated cluster discovery</li>
+                <li>Marketplace integrations</li>
+                <li>Enterprise self-host + RBAC</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
 
-function Divider() {
-  return <div className="border-t border-cream/8" />;
-}
+      {/* PERFORMANCE & SECURITY */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">12 — Performance &amp; Security</div>
+          <h2>
+            Fast, frugal, <span className="it">guarded.</span>
+          </h2>
+          <div className="grid2" style={{ marginTop: 8 }}>
+            <div className="card reveal">
+              <h3>Performance &amp; scalability</h3>
+              <p>
+                ~48% token reduction via context trimming, JSON mode and tight token
+                caps. Sequential generation staggered to respect rate limits. Edge
+                caching for static pages. Phase 2: prompt caching, result caching,
+                parallel generation on paid tiers, multi-region replicas.
+              </p>
+            </div>
+            <div className="card reveal">
+              <h3>Security &amp; access</h3>
+              <p>
+                Authentication and onboarding are intentionally disabled during the
+                BuildFest judging window, so evaluators can test every surface
+                instantly with no sign-up friction. The production build ships with
+                full email + OAuth onboarding, Supabase Row-Level Security for
+                multi-tenant brand workspaces, and OAuth-scoped MCP endpoints.
+                Service-role DB access stays server-side only; keys live in env
+                vars, never committed. Every LLM response is schema-validated.
+                Deshly processes brand-owned content, not consumer PII. Phase 2 adds
+                GDPR/DPDP compliance and audit logging.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-function StackCol({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div>
-      <div className="font-medium mb-3 text-cream text-sm">{title}</div>
-      <ul className="space-y-1.5 text-cream/55">
-        {items.map((item) => (
-          <li key={item} className="flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full bg-brass" />
-            {item}
-          </li>
-        ))}
-      </ul>
+      {/* TEAM */}
+      <section id="team">
+        <div className="wrap">
+          <div className="eyebrow">13 — Team</div>
+          <h2>
+            Team <span className="it">Vengeance.</span>
+          </h2>
+          <p className="section-lede">
+            Three builders behind Deshly — shipping a culturally-intelligent
+            commerce engine from Dhaka to the world.
+          </p>
+          <div className="team reveal">
+            <div className="member">
+              <div className="avatar">S</div>
+              <div className="nm">Samprity Haque</div>
+              <div className="rl">Lead · Full-Stack &amp; AI</div>
+              <div className="em">haquesamprity4@gmail.com</div>
+            </div>
+            <div className="member">
+              <div className="avatar">S</div>
+              <div className="nm">Sirajus Salikin Siddique</div>
+              <div className="rl">Backend Engineer</div>
+              <div className="em">sirajus.cse.20230204119@aust.edu</div>
+            </div>
+            <div className="member">
+              <div className="avatar">M</div>
+              <div className="nm">Meher Nigar</div>
+              <div className="rl">Frontend Engineer</div>
+              <div className="em">meher.cse.00724105101133@aust.edu</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CHANGELOG */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">14 — Changelog</div>
+          <h2>
+            Version <span className="it">history.</span>
+          </h2>
+          <div className="log reveal">
+            <div className="entry">
+              <span className="v">v1.0 — Prelim submission</span>
+              <p>
+                Four product surfaces live. Token optimization (~48%). Caption
+                counter fix. Three MCP servers documented. Live /docs whitepaper
+                shipped.
+              </p>
+            </div>
+            <div className="entry">
+              <span className="v">v0.9 — Generation polish</span>
+              <p>
+                Campaign cards redesigned with Performance Snapshot, collapsible
+                drawers, Copy Full Package action.
+              </p>
+            </div>
+            <div className="entry">
+              <span className="v">v0.8 — Matching engine</span>
+              <p>
+                Strategist-framed cluster matcher: tier labels, forced score spread,
+                emotional &quot;why this works&quot; insights.
+              </p>
+            </div>
+            <div className="entry">
+              <span className="v">v0.7 — Brand DNA</span>
+              <p>
+                Contrast-aware voice extraction with banned-phrase enforcement and
+                pgvector embeddings.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div className="wrap">
+          <div className="fw">
+            Deshly<span className="dot">.</span>
+          </div>
+          <div className="meta">
+            Culture, scaled · The Infinity AI BuildFest 2026 ·{" "}
+            <a href="https://deshly.vercel.app">deshly.vercel.app</a> ·{" "}
+            <a href="https://github.com/httprity/deshly">GitHub</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

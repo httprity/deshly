@@ -68,7 +68,7 @@ export default function Home() {
         <div className="relative max-w-[1400px] mx-auto w-full">
           <div className="flex items-center gap-3 mb-8 text-[10px] uppercase tracking-[0.25em] text-brass">
             <span className="w-8 h-px bg-brass" />
-            <span>The Audience Intelligence Platform · v1</span>
+            <span>The Multimodal Content Engine · v1</span>
           </div>
 
           {/* H1 - Changed mb-6 to mb-0 */}
