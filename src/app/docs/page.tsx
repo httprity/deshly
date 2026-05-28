@@ -176,7 +176,7 @@ export default function DocsPage() {
             <a href="#roadmap">Roadmap</a>
             <a href="#team">Team</a>
           </div>
-          <a href="https://deshly.vercel.app" className="nav-cta">
+          <a href="https://deshly-rho.vercel.app/" className="nav-cta">
             Live App ↗
           </a>
         </div>
