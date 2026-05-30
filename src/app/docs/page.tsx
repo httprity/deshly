@@ -66,6 +66,16 @@ const CSS = `
 .dz .card h3 .num{font-family:var(--mono);font-size:12px;color:var(--terra);margin-right:8px}
 .dz .card p{color:var(--cream-dim);font-size:14.5px;margin-bottom:0}
 .dz .card .tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);border:1px solid var(--panel-line);padding:4px 9px;border-radius:2px;margin-top:14px;margin-right:6px}
+.dz .card ul.bullets{list-style:none;padding:0;margin:0}
+.dz .card ul.bullets li{font-size:14.5px;color:var(--cream-dim);padding:10px 0 10px 20px;position:relative;border-bottom:1px solid var(--panel-line)}
+.dz .card ul.bullets li:last-child{border-bottom:none;padding-bottom:0}
+.dz .card ul.bullets li::before{content:"→";position:absolute;left:0;color:var(--terra);font-family:var(--mono)}
+.dz .card ul.bullets li strong{color:var(--cream);font-weight:600;display:block;margin-bottom:2px}
+.dz .card ul.bullets{list-style:none;padding:0;margin:0}
+.dz .card ul.bullets li{font-size:14.5px;color:var(--cream-dim);padding:10px 0 10px 20px;position:relative;border-bottom:1px solid var(--panel-line)}
+.dz .card ul.bullets li:last-child{border-bottom:none;padding-bottom:0}
+.dz .card ul.bullets li::before{content:"→";position:absolute;left:0;color:var(--terra);font-family:var(--mono)}
+.dz .card ul.bullets li strong{color:var(--cream);font-weight:600;display:block;margin-bottom:2px}
 
 .dz .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--panel-line);border-radius:6px;overflow:hidden}
 .dz .flow .step{background:var(--void-2);padding:28px 24px;position:relative;border-right:1px solid var(--panel-line)}
@@ -866,28 +876,53 @@ export default function DocsPage() {
           <div className="grid2" style={{ marginTop: 8 }}>
             <div className="card reveal">
               <h3>Performance &amp; scalability</h3>
-              <p>
-                ~48% token reduction via context trimming, JSON mode and tight token
-                caps. Sequential generation staggered to respect rate limits. Edge
-                caching for static pages. Phase 2: prompt caching, result caching,
-                parallel generation on paid tiers, multi-region replicas. Phase 3:
-                graph DB layer for multi-hop relationship queries when cluster count
-                exceeds ~500 and query complexity outgrows relational joins.
-              </p>
+              <ul className="bullets">
+                <li>
+                  <strong>~48% token reduction</strong>
+                  Context trimming, JSON mode, tight max_tokens caps vs naive prompts.
+                </li>
+                <li>
+                  <strong>Rate-limit aware</strong>
+                  Sequential generation with inter-call stagger; multi-provider fallback prevents hard failures.
+                </li>
+                <li>
+                  <strong>Phase 2 — speed</strong>
+                  Prompt caching, result caching, parallel generation on paid tiers, multi-region replicas.
+                </li>
+                <li>
+                  <strong>Phase 3 — graph layer</strong>
+                  Neo4j or Apache AGE for multi-hop queries when cluster count exceeds ~500 and join complexity outgrows relational storage.
+                </li>
+              </ul>
             </div>
             <div className="card reveal">
               <h3>Security &amp; access</h3>
-              <p>
-                Authentication and onboarding are intentionally disabled during the
-                BuildFest judging window, so evaluators can test every surface
-                instantly with no sign-up friction. The production build ships with
-                full email + OAuth onboarding, Supabase Row-Level Security for
-                multi-tenant brand workspaces, and OAuth-scoped MCP endpoints.
-                Service-role DB access stays server-side only; keys live in env
-                vars, never committed. Every LLM response is schema-validated.
-                Deshly processes brand-owned content, not consumer PII. Phase 2 adds
-                GDPR/DPDP compliance and audit logging.
-              </p>
+              <ul className="bullets">
+                <li>
+                  <strong>Auth disabled for judging</strong>
+                  Evaluators can test every surface instantly with no sign-up friction. Full email + OAuth onboarding ships in the production build.
+                </li>
+                <li>
+                  <strong>Multi-tenant ready</strong>
+                  Supabase Row-Level Security for brand workspaces and OAuth-scoped MCP endpoints (Phase 2).
+                </li>
+                <li>
+                  <strong>Server-side only DB access</strong>
+                  Service-role keys live in env vars, never committed; the client never touches the database directly.
+                </li>
+                <li>
+                  <strong>Schema-validated outputs</strong>
+                  Every LLM response is parsed and validated against typed contracts before persistence.
+                </li>
+                <li>
+                  <strong>No consumer PII</strong>
+                  Deshly processes brand-owned content only. Reddit signals are aggregated to cluster level.
+                </li>
+                <li>
+                  <strong>Compliance &amp; audit</strong>
+                  GDPR / DPDP compliance and audit logging on the Phase 2 roadmap for enterprise rollout.
+                </li>
+              </ul>
             </div>
           </div>
         </div>
