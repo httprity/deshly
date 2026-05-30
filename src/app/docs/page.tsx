@@ -154,7 +154,6 @@ export default function DocsPage() {
 
   return (
     <div className="dz">
-      {/* fonts + styles */}
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link
         href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Spline+Sans+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap"
@@ -176,8 +175,8 @@ export default function DocsPage() {
             <a href="#roadmap">Roadmap</a>
             <a href="#team">Team</a>
           </div>
-          <a href="https://deshly-rho.vercel.app/" className="nav-cta">
-            Live App ↗
+          <a href="/" className="nav-cta">
+            ← Back to App
           </a>
         </div>
       </nav>
@@ -196,8 +195,8 @@ export default function DocsPage() {
           <p className="lede" style={{ marginTop: 24 }}>
             Deshly is an AI intelligence layer for{" "}
             <strong>emerging-market D2C brands</strong> selling to their global
-            diaspora. It learns a brand&apos;s voice from its own captions, finds
-            the audiences most likely to buy each product, and generates{" "}
+            diaspora. It learns a brand&apos;s voice from its own captions,
+            finds the audiences most likely to buy each product, and generates{" "}
             <strong>complete localized campaigns</strong> — captions, visuals,
             reels, WhatsApp copy, and timing — for every community, in their
             language and timezone.
@@ -249,10 +248,10 @@ export default function DocsPage() {
             that connect them back to home. These customers carry stronger
             emotional buying intent and average order values{" "}
             <strong>3–10× higher</strong> than local buyers — yet most home-country
-            brands miss them completely. Today, <strong>2,400+ Bangladeshi fashion,
-            food and lifestyle brands</strong> still market as if their only
-            audience lives in Bangladesh: local content, Bangladesh hours, local
-            assumptions. A brand may have 24,000 followers but reach only{" "}
+            brands miss them completely. Today, <strong>2,400+ Bangladeshi
+            fashion, food and lifestyle brands</strong> still market as if their
+            only audience lives in Bangladesh: local content, Bangladesh hours,
+            local assumptions. A brand may have 24,000 followers but reach only{" "}
             <strong>312 engaged users in London or 89 in New York per week.</strong>
           </p>
 
@@ -469,6 +468,16 @@ export default function DocsPage() {
                     <span className="badge plan">Phase 3</span>
                   </td>
                 </tr>
+                <tr>
+                  <td>Graph DB layer</td>
+                  <td>
+                    Native graph storage (Neo4j or Apache AGE) for multi-hop
+                    brand-cluster-occasion-performance queries
+                  </td>
+                  <td>
+                    <span className="badge plan">Phase 3</span>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -484,7 +493,8 @@ export default function DocsPage() {
           </h2>
           <p className="section-lede">
             Synchronous where the user waits; resilient at every external
-            dependency.
+            dependency. Graph-shaped relationships today; graph-stored when
+            scale demands it.
           </p>
           <div className="diagram reveal">
             <pre>{`   ┌─────────────────────────── CLIENT (Next.js 16 App Router) ──────────────────────────┐
@@ -506,6 +516,8 @@ export default function DocsPage() {
        │   SUPABASE — PostgreSQL + pgvector                                                  │
        │   brands · brand_voices(embedding) · clusters · campaigns · ingestion_logs          │
        └───────────────────────────────────────────────────────────────────────────────────────┘
+                                  │  Phase 3 → migrate relationship-heavy queries to graph DB
+                                  ▼  (Neo4j / Apache AGE) behind the same MCP contract
                    ▲
        ┌───────────┴───────────┐
        │  Reddit scraper       │  community signals → cluster confidence
@@ -697,7 +709,11 @@ export default function DocsPage() {
               <p>
                 Brand voice embedded in pgvector (1536-dim, IVFFlat). Retrieval
                 augments generation with typed cluster profiles rather than chunked
-                documents — in-context graph reasoning over relationships.
+                documents — in-context graph reasoning over relationships between
+                brands, audiences, occasions and channels. Storage is relational
+                today; the conceptual graph is exposed through the DiasporaGraph
+                MCP, so a Phase 3 migration to Neo4j or Apache AGE doesn&apos;t
+                change the tool contract.
               </p>
             </div>
             <div className="card reveal">
@@ -820,6 +836,7 @@ export default function DocsPage() {
                 <li>5 countries, 80+ clusters</li>
                 <li>Native image generation</li>
                 <li>Direct publishing integrations</li>
+                <li>Email + OAuth onboarding</li>
                 <li>RLS multi-tenant workspaces</li>
                 <li>Performance reconciliation</li>
               </ul>
@@ -832,6 +849,7 @@ export default function DocsPage() {
                 <li>Automated cluster discovery</li>
                 <li>Marketplace integrations</li>
                 <li>Enterprise self-host + RBAC</li>
+                <li>Graph DB migration (Neo4j / Apache AGE)</li>
               </ul>
             </div>
           </div>
@@ -852,7 +870,9 @@ export default function DocsPage() {
                 ~48% token reduction via context trimming, JSON mode and tight token
                 caps. Sequential generation staggered to respect rate limits. Edge
                 caching for static pages. Phase 2: prompt caching, result caching,
-                parallel generation on paid tiers, multi-region replicas.
+                parallel generation on paid tiers, multi-region replicas. Phase 3:
+                graph DB layer for multi-hop relationship queries when cluster count
+                exceeds ~500 and query complexity outgrows relational joins.
               </p>
             </div>
             <div className="card reveal">
