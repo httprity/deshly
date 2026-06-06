@@ -77,3 +77,26 @@ export interface Campaign {
   reasoning_trace: string;
   soul_score: number;
 }
+export interface ProductAttributes {
+  category: string;
+  product_type: "self_wear" | "gift" | "both" | "display" | "consumable";
+  price_tier: "budget" | "mid" | "premium" | "luxury";
+  price_value?: number;
+  price_currency?: string;
+  cultural_coding: "heritage" | "western" | "neutral" | "fusion";
+  occasion_bound: "everyday" | "festival_gated" | "occasion_flexible";
+  relevant_occasions: string[];
+  gender_skew: "men" | "women" | "unisex";
+  age_skew: "youth" | "adult" | "broad";
+  essence: string;
+}
+
+export interface RankedAudience {
+  cluster_id: string;
+  fit_tier: "Strong fit" | "Moderate fit" | "Exploratory";
+  why_this_fits: string;
+  affordability_read: string;
+  buying_motivation: string;
+  best_channel: string;
+  best_timing_note: string;
+}

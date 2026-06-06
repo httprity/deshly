@@ -2,173 +2,188 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { callLLM } from "@/lib/llm";
 import type { Cluster } from "@/lib/types";
+import { logSignals } from "@/lib/signals";
 
-const MATCH_PROMPT = `You are Deshly — a brand strategist matching a Bangladeshi D2C product to consumer audiences.
+const MATCH_PROMPT = `You are Deshly — a diaspora commerce strategist. You decide which markets a brand should TEST a SPECIFIC product in first, score that recommendation on explainable factors, and explain your reasoning in plain language a brand owner understands.
 
-You are NOT a scoring algorithm. You are a strategist who uses scores as scaffolding. Score is skeleton, insight is soul.
+You receive a product, a brand voice, and a set of consumer clusters (diaspora and/or local Bangladesh), each with documented real buying behavior. Reason about how THIS SPECIFIC PRODUCT fits how EACH market actually buys, score the top 3, and return them.
 
-You will receive a product description, brand voice, and 13 clusters (8 diaspora, 5 local Bangladesh). Rank all 13, and for the TOP 3 deliver the strategist's emotional read in a SCANNABLE dashboard format.
-
------------------------------------
-SCORING (0-100 internal scaffolding)
------------------------------------
-
-Score each cluster on four dimensions:
-
-1. STYLE_MATCH — Does product visually/emotionally fit how this cluster wants to present themselves? Read aesthetic_preference.
-2. SPENDING_FIT — Inside cluster's AOV range = 90+, within 20% above/below = 65-75, far outside = under 50.
-3. BEST_PLATFORM — Does product TYPE thrive on this cluster's top channel? Read channel weights.
-4. BUYING_INTENT — Does product fit any of cluster's primary_occasions (match literally)?
-
-Overall = 0.30·STYLE + 0.30·SPENDING + 0.20·PLATFORM + 0.20·INTENT.
-
-All scores must be INTEGERS 0-100. Never decimals. Never out of 10. Always out of 100.
+IMPORTANT: You will only be given clusters the brand can ACTUALLY SERVE (based on their fulfillment capability). Never invent or suggest a market that is not in the provided list.
 
 -----------------------------------
-FORCE SCORE SPREAD ACROSS TOP 3
+FIRST: READ THE PRODUCT
 -----------------------------------
 
-Three clusters at 82, 81, 79 is useless. Force your top 3 into a story:
-- #1: clear winner (85+)
-- #2: solid second option (68-78)
-- #3: worth knowing but a stretch (55-67)
+Understand what the product IS before scoring:
+- CATEGORY & SUBCATEGORY: what is it, specifically
+- PRICE TIER: budget / mid / premium / luxury (relative to Bangladeshi retail; budget under ~1000 BDT equiv, mid 1000-4000, premium 4000-12000, luxury 12000+). If a price is given, use it. If not, infer from the description.
+- MAIN USE CASE: how/why people use it (e.g. "daily self-care", "festival gifting", "everyday wear")
+- TRUST REQUIREMENT: how much trust a buyer needs before purchasing (High for skincare/ingestibles/high-price, Medium for fashion, Low for cheap impulse items)
+- CULTURAL CODING: heritage (Bangladeshi/South-Asian tradition), western (global/streetwear), neutral, or fusion
+- OCCASION: everyday, or tied to specific occasions (Eid, weddings, Pohela Boishakh)
 
-If natural scores cluster tightly, push them apart. The user must instantly see "obvious / smart bet / surprise."
-
------------------------------------
-DIASPORA DIVERSITY
------------------------------------
-
-Deshly exists because Bangladeshi brands undersell to diaspora. Unless the product is explicitly local-only, include AT LEAST ONE diaspora cluster in top 3. Don't let estimated_size bias you — diaspora is smaller but spends 3-10x more.
+Use any STRUCTURED HINTS the brand provided (positioning, target buyer, occasions) to sharpen this read — but still reason from the description.
 
 -----------------------------------
-TIER LABELS
+THEN: SCORE EACH MARKET ON 4 EXPLAINABLE FACTORS (1-10 integers)
 -----------------------------------
 
-85+ → "Perfect Fit"
-70-84 → "Strong Fit"
-55-69 → "Decent Fit"
-<55 → "Weak Fit"
+For each cluster, score these — based on REASONING, not vibes:
+
+1. PRODUCT-MARKET FIT (1-10): Does THIS exact product match this audience's lifestyle, culture, needs, and buying habits? (Read aesthetic_preference, cultural_notes.)
+2. PRICE ALIGNMENT (1-10): Does the product's price tier fit this audience's spending capacity? Compare to their AOV range. In range = high; far above their usual = low.
+3. OCCASION FIT (1-10): Does the product match this audience's relevant cultural, seasonal, or daily-use occasions? (Read primary_occasions, gift_giving_pattern.)
+4. CHANNEL FIT (1-10): Are this audience's preferred channels suitable for THIS product type? (Read channel preferences. Visual products thrive on Instagram; trust-heavy products need WhatsApp.)
+
+RECOMMENDATION SCORE = weighted average, rounded to ONE decimal:
+(ProductMarketFit * 0.35) + (PriceAlignment * 0.25) + (OccasionFit * 0.20) + (ChannelFit * 0.20)
+
+This is a RECOMMENDATION/confidence score — "how strongly Deshly recommends testing this market first." It is NOT a sales or performance prediction.
+
+FIT TIER from the recommendation score:
+- 8.3 to 10 = "Strong Fit"
+- 6.5 to 8.2 = "Moderate Fit"
+- below 6.5 = "Exploratory"
 
 -----------------------------------
-THE EMOTIONAL HOOK — ONE SENTENCE ONLY
+THE RANKING MUST CHANGE BASED ON THE PRODUCT
 -----------------------------------
 
-Every card needs ONE punchy "why_this_works" sentence. NOT data justification. NOT a paragraph. ONE strategist insight that makes the founder feel understood.
+Most important rule. A skincare serum, a saree, a snack box, a perfume, and a budget t-shirt must NOT produce the same top markets. Reason from the product. A gift-sending Gulf audience scores high for a sendable festival gift but low for everyday sneakers. Be honest with low scores.
 
-BAD: "High engagement on Instagram makes this a strong match."
-BAD (too long): "This audience likes fashion that feels expressive but they also care about durability, plus they shop late at night."
-GOOD: "They buy clothes to post, not to wear — a loud graphic with a quiet caption is what their feed wants."
-GOOD: "Wearing a brand from home isn't nostalgia for them — it's a flex."
-GOOD: "Values comfort over performance — a soft fitted tee they'd wear three times a week."
-
-ONE sentence. Cut it short. Editorial, not explanatory.
+Return the TOP 3 markets by recommendation score, best first — chosen ONLY from the provided clusters.
 
 -----------------------------------
-THE AUDIENCE PROFILE — BULLETED, NOT PROSE
+WRITING RULES
 -----------------------------------
 
-Return audience_profile as an ARRAY of EXACTLY 3 bullets. Each bullet is ONE short scannable line in this format:
+- NO fake prediction language: no "guaranteed sales", "expected conversion", "estimated reactions", "predicted performance", "+X% boost", "engagement rate". This is recommendation reasoning, not forecasting.
+- "one_line_reason" and "why_this_fits" MUST reference a SPECIFIC product attribute AND a SPECIFIC audience behavior. No generic filler.
+- "price_fit" is a qualitative sentence comparing the product's price to the audience's typical spend.
+- "risk_note" is one honest caution for marketing to this audience with this product.
+- Sub-scores are integers 1-10. Recommendation score has ONE decimal.
 
-"[Label]: [insight in 5-10 words]"
-
-Bullets must cover:
-1. LIFESTYLE — How this audience moves through the world
-2. SHOPPING BEHAVIOR — Why/when/how they buy
-3. CULTURAL SIGNAL — What buying this product says about them
-
-Examples:
-- "Lifestyle: Always on the go, prioritizes versatile everyday wear"
-- "Shopping behavior: Friday night Instagram scrolling, impulse-buys before peak hours"
-- "Cultural signal: Buys to signal taste to friends, not strangers"
-
-Each bullet under 12 words. No filler.
-
------------------------------------
-TOP CHANNEL — TEXT TAG, NOT A BAR
------------------------------------
-
-Return top_channel as a clean string: the platform name + brief reason. Examples:
-- "Instagram — 65% of their engagement lives here"
-- "WhatsApp — orders happen in DMs after seeing the post"
-- "TikTok — discovery happens before Instagram"
-
------------------------------------
-INTENT LEVEL (qualitative, not a score)
------------------------------------
-
-Return intent_level as one of: "High" | "Medium" | "Low"
-- High: Product matches multiple primary occasions OR an active occasion this month
-- Medium: Product fits an occasional pattern
-- Low: Product is off-pattern for this cluster's typical buying
-
------------------------------------
-PRICING — PLAIN LANGUAGE DATA FIELD
------------------------------------
-
-Return typical_order as a string. Format: "[Currency symbol][min] – [max]". Examples:
-- "৳800 – 1,500"
-- "£45 – 110"
-- "$60 – 140"
-- "AED 200 – 450"
-
-Just the price range. No surrounding sentence.
-
------------------------------------
-BANNED PHRASES
------------------------------------
-
-"aligns with", "resonates with", "matches preferences", "is a good fit", "perfect for", "ideal target", "high engagement rate", "target market"
+BANNED PHRASES: "aligns with", "resonates with", "matches preferences", "is a good fit", "perfect for", "ideal target", "target market".
 
 -----------------------------------
 RETURN ONLY VALID JSON — NO MARKDOWN
 -----------------------------------
 
 {
+  "product_read": {
+    "category": "short category, e.g. 'Skincare serum'",
+    "price_tier": "Budget | Mid | Premium | Luxury",
+    "use_case": "short main use case, e.g. 'Daily self-care + pre-event glow'",
+    "trust_requirement": "High | Medium | Low"
+  },
   "rankings": [
     {
       "cluster_id": "exact_id_from_input",
-      "display_name": "'[City] — [Segment]' format. Disambiguate when cities repeat. E.g. 'Dhaka — Students 18-24', 'London — Bangladeshi Pros'.",
-      "score": integer 0-100,
-      "tier": "Perfect Fit | Strong Fit | Decent Fit | Weak Fit",
+      "display_name": "'[City] — [Segment]'. Disambiguate repeats. E.g. 'Dhaka — Students 18-24'.",
+      "fit_tier": "Strong Fit | Moderate Fit | Exploratory",
+      "recommendation_score": 8.7,
+      "one_line_reason": "ONE sentence. Why test here first — references a specific product attribute AND a specific audience behavior.",
       "score_breakdown": {
-        "style_match": integer 0-100,
-        "spending_fit": integer 0-100,
-        "best_platform": integer 0-100,
-        "buying_intent": integer 0-100
+        "product_market_fit": 9,
+        "price_alignment": 8,
+        "occasion_fit": 7,
+        "channel_fit": 8
       },
-      "why_this_works": "ONE sentence. Strategist's emotional read. Max 20 words.",
-      "audience_profile": [
-        "Lifestyle: ...",
-        "Shopping behavior: ...",
-        "Cultural signal: ..."
-      ],
-      "typical_order": "[Currency symbol][min] – [max]",
-      "top_channel": "Platform name — short reason",
-      "intent_level": "High | Medium | Low"
+      "reasoning": {
+        "why_this_fits": "2 sentences. Deeper reasoning on product-market fit.",
+        "affordability_read": "1-2 sentences comparing product price to this audience's spend, with a campaign implication.",
+        "buying_motivation": "Short line: what actually makes this audience buy this product.",
+        "best_channel": "Channel(s) + brief reason, e.g. 'Instagram for visual proof, WhatsApp for purchase questions'",
+        "best_timing_note": "Qualitative timing from their peak windows, e.g. 'Saturday evening or weekday after work'",
+        "risk_note": "One honest caution for marketing this product to this audience.",
+        "suggested_positioning": "One line: the recommended messaging angle for this market."
+      }
     }
   ]
 }
 
-Return all 13 clusters sorted by score descending.
+Return EXACTLY 3 rankings (or fewer if fewer clusters are provided), ordered by recommendation_score descending.
 
 -----------------------------------
-SELF-CHECK
+SELF-CHECK BEFORE RETURNING
 -----------------------------------
 
-1. Top 3 scores span 20+ points?
-2. At least one diaspora cluster in top 3?
-3. Every why_this_works under 20 words?
-4. Every audience_profile array has EXACTLY 3 bullets, each under 12 words?
-5. All scores are integers 0-100, never decimals?
-6. typical_order is just the price range, no extra words?
+1. Did the ranking reason about THIS product (not default markets)?
+2. Are sub-scores integers 1-10 and recommendation_score one decimal?
+3. Does recommendation_score match the weighted formula?
+4. Does the fit_tier match the score thresholds?
+5. Are ALL returned clusters from the provided list (none invented)?
+6. Zero fake-prediction language, zero banned phrases?
 
 Begin.`;
+
+// ---- Fulfillment → which clusters the brand can actually serve ----
+// Returns a filter function over clusters + a count of hidden diaspora markets.
+function applyFulfillmentFilter(
+  clusters: Cluster[],
+  fulfillment: string | undefined,
+  productDescription: string
+): { allowed: Cluster[]; hiddenDiasporaCount: number; note: string | null } {
+  const f = (fulfillment || "").toLowerCase();
+
+  const localClusters = clusters.filter((c) => c.segment_type === "local");
+  const diasporaClusters = clusters.filter((c) => c.segment_type === "diaspora");
+
+  // "my city only" — try to match the city named in the description; else all local
+  if (f.includes("city")) {
+    const desc = productDescription.toLowerCase();
+    const cityMatch = localClusters.filter((c) =>
+      desc.includes((c.city || "").toLowerCase())
+    );
+    const allowed = cityMatch.length > 0 ? cityMatch : localClusters;
+    return {
+      allowed,
+      hiddenDiasporaCount: diasporaClusters.length,
+      note: `${diasporaClusters.length} diaspora markets hidden — enable international shipping to see them.`,
+    };
+  }
+
+  // "nationwide" — all local, no diaspora
+  if (f.includes("nationwide")) {
+    return {
+      allowed: localClusters,
+      hiddenDiasporaCount: diasporaClusters.length,
+      note: `${diasporaClusters.length} diaspora markets hidden — enable international shipping to see them.`,
+    };
+  }
+
+  // "international" — local + diaspora (can ship abroad)
+  if (f.includes("international")) {
+    return { allowed: clusters, hiddenDiasporaCount: 0, note: null };
+  }
+
+  // "worldwide" — everything, diaspora fully in play
+  if (f.includes("worldwide")) {
+    return { allowed: clusters, hiddenDiasporaCount: 0, note: null };
+  }
+
+  // default (no fulfillment given) — everything, no hiding
+  return { allowed: clusters, hiddenDiasporaCount: 0, note: null };
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { productDescription, brandVoiceId, topN = 3 } = body;
+    const {
+      productDescription,
+      brandVoiceId,
+      price,
+      topN = 3,
+      // new structured fields (all optional except fulfillment, which has a safe default)
+      category,
+      fulfillment,
+      positioning,
+      targetBuyer,
+      occasions,
+      notes,
+      personalize,
+      brandHandle,
+    } = body;
 
     if (!productDescription || typeof productDescription !== "string") {
       return NextResponse.json(
@@ -210,8 +225,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Compact cluster context — only fields the LLM needs to cite
-    const clusterSummaries = clusters.map((c: Cluster) => {
+    // ---- FULFILLMENT FILTER: only score markets the brand can serve ----
+    const { allowed, hiddenDiasporaCount, note } = applyFulfillmentFilter(
+      clusters as Cluster[],
+      fulfillment,
+      productDescription
+    );
+
+    const clustersToScore = allowed.length > 0 ? allowed : (clusters as Cluster[]);
+
+    // Compact cluster context — fields the LLM needs to reason about fit
+    const clusterSummaries = clustersToScore.map((c: Cluster) => {
       const topChannel = Object.entries(c.channel_preferences || {})
         .sort(([, a]: any, [, b]: any) => (b as number) - (a as number))[0];
       const topChannelStr = topChannel
@@ -227,12 +251,14 @@ export async function POST(request: NextRequest) {
         city: c.city,
         country: c.country,
         age: c.age_band,
-        size: c.estimated_size,
         occasions: c.primary_occasions,
         aov: `${c.currency} ${c.avg_order_value_min}-${c.avg_order_value_max}`,
+        gift_pattern: c.gift_giving_pattern,
         aesthetic: c.aesthetic_preference,
+        channels: c.channel_preferences,
         top_channel: topChannelStr,
         peak: peakDay,
+        notes: (c.cultural_notes || "").slice(0, 180),
       };
     });
 
@@ -245,42 +271,66 @@ export async function POST(request: NextRequest) {
       cares_about: vp.what_they_care_about || [],
     };
 
+    const priceLine = price
+      ? `\nPRODUCT PRICE: ${price}`
+      : "\nPRODUCT PRICE: not given — infer price tier from the description.";
+
+    // Structured hints block (only include provided fields)
+    const hints: string[] = [];
+    if (category) hints.push(`Category: ${category}`);
+    if (positioning) hints.push(`Brand positioning: ${positioning}`);
+    if (targetBuyer) hints.push(`Main buyer: ${targetBuyer}`);
+    if (Array.isArray(occasions) && occasions.length) hints.push(`Purchase occasions: ${occasions.join(", ")}`);
+    if (notes) hints.push(`Brand notes: ${notes}`);
+    const hintsBlock = hints.length ? `\nSTRUCTURED HINTS:\n${hints.join("\n")}` : "";
+
     const fullPrompt = `${MATCH_PROMPT}
 
 PRODUCT:
-${productDescription}
+${productDescription}${priceLine}${hintsBlock}
 
 BRAND VOICE:
 ${JSON.stringify(compactVoice)}
 
-CLUSTERS:
+CLUSTERS (only markets this brand can serve):
 ${JSON.stringify(clusterSummaries)}`;
 
     const llmResult = await callLLM({
       userPrompt: fullPrompt,
       jsonMode: true,
       temperature: 0.7,
-      maxTokens: 4000,
+      maxTokens: 3500,
     });
     const responseText = llmResult.text;
 
     let parsed: {
+      product_read?: {
+        category?: string;
+        price_tier?: string;
+        use_case?: string;
+        trust_requirement?: string;
+      };
       rankings: Array<{
         cluster_id: string;
         display_name?: string;
-        score: number;
-        tier?: string;
+        fit_tier?: string;
+        recommendation_score?: number;
+        one_line_reason?: string;
         score_breakdown?: {
-          style_match: number;
-          spending_fit: number;
-          best_platform: number;
-          buying_intent: number;
+          product_market_fit?: number;
+          price_alignment?: number;
+          occasion_fit?: number;
+          channel_fit?: number;
         };
-        why_this_works?: string;
-        audience_profile?: string[];
-        typical_order?: string;
-        top_channel?: string;
-        intent_level?: string;
+        reasoning?: {
+          why_this_fits?: string;
+          affordability_read?: string;
+          buying_motivation?: string;
+          best_channel?: string;
+          best_timing_note?: string;
+          risk_note?: string;
+          suggested_positioning?: string;
+        };
       }>;
     };
 
@@ -315,29 +365,47 @@ ${JSON.stringify(clusterSummaries)}`;
       );
     }
 
-    const sorted = parsed.rankings.sort((a, b) => b.score - a.score);
+    // Sort by recommendation score desc, take top N
+    const sorted = parsed.rankings
+      .slice()
+      .sort((a, b) => (b.recommendation_score || 0) - (a.recommendation_score || 0));
     const topMatches = sorted.slice(0, topN);
 
-    const enrichedMatches = topMatches.map((match) => {
-      const cluster = clusters.find((c: Cluster) => c.id === match.cluster_id);
-      return {
-        cluster,
-        score: match.score,
-        tier: match.tier,
-        display_name: match.display_name,
-        score_breakdown: match.score_breakdown,
-        why_this_works: match.why_this_works,
-        audience_profile: match.audience_profile,
-        typical_order: match.typical_order,
-        top_channel: match.top_channel,
-        intent_level: match.intent_level,
-      };
-    });
+    const enrichedMatches = topMatches
+      .map((match) => {
+        const cluster = clustersToScore.find((c: Cluster) => c.id === match.cluster_id);
+        return {
+          cluster,
+          display_name: match.display_name,
+          fit_tier: match.fit_tier,
+          recommendation_score: match.recommendation_score,
+          one_line_reason: match.one_line_reason,
+          score_breakdown: match.score_breakdown,
+          reasoning: match.reasoning,
+        };
+      })
+      .filter((m) => m.cluster); // drop hallucinated cluster_ids
+
+    // Log one "recommended" signal per market (fire-and-forget; never blocks)
+    logSignals(
+      enrichedMatches.map((m) => ({
+        brandVoiceId,
+        brandHandle: brandHandle || null,
+        productDescription,
+        price: price || null,
+        clusterId: m.cluster!.id,
+        action: "recommended" as const,
+        recommendationScore: m.recommendation_score ?? null,
+        fitTier: m.fit_tier ?? null,
+      }))
+    );
 
     return NextResponse.json({
       success: true,
+      productRead: parsed.product_read || null,
       matches: enrichedMatches,
-      allRankings: sorted,
+      hiddenDiasporaCount,
+      fulfillmentNote: note,
     });
   } catch (error: any) {
     console.error("Match clusters error:", error);

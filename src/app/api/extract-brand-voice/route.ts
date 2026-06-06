@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callLLM, generateEmbedding } from "@/lib/llm";
 import { supabaseAdmin } from "@/lib/supabase";
+import { generateBrandHandle } from "@/lib/signals";
 import type { BrandVoiceProfile } from "@/lib/types";
 
 const EXTRACTION_PROMPT = `
@@ -135,7 +136,45 @@ NO EXPLANATION
 
 "they_never": [
 "3 things the brand avoids doing in their communication"
-]
+],
+
+"voice_style": {
+"tone": ["2-4 specific tone words observed in the captions"],
+"energy_level": "low | low-medium | medium | medium-high | high",
+"formality": "casual | semi-formal | polished | formal",
+"language_mix": "Describe the English/Bangla/Banglish balance you actually see, e.g. 'mostly English with occasional Bangla warmth'",
+"emoji_usage": "none | rare | moderate | heavy",
+"urgency_style": "Describe how (or whether) they push urgency, e.g. 'soft scarcity, never aggressive'"
+},
+
+"product_framing": {
+"usual_angle": "How this brand frames products: style upgrade / gift / occasion piece / comfort essential / status symbol / cultural item / limited drop / everyday practical / premium investment",
+"occasion_signals": ["occasions the brand leans on, if any"],
+"price_positioning": "budget | mid-range | premium | luxury (as implied by tone, not actual price)"
+},
+
+"conversion_style": {
+"cta_style": "soft | direct | mixed",
+"urgency_level": "none | low | medium | high",
+"preferred_ctas": ["2-4 CTA phrases that fit this brand, e.g. 'DM to order', 'available now', 'limited pieces'"]
+},
+
+"brand_maturity": "beginner | growing | premium boutique | established | luxury",
+
+"trust_requirements": [
+"2-4 concrete things this brand should emphasize to build buyer trust, e.g. 'show fabric closeups', 'mention hand embroidery', 'clarify delivery timeline'"
+],
+
+"dont_rules": [
+"3-5 concrete writing rules the generator must NOT break, derived from this brand, e.g. 'Do not use hype words like fire or must-have', 'Max one emoji', 'Never sound discount-heavy'"
+],
+
+"generation_instructions": {
+"caption_instruction": "A direct, ready-to-use instruction telling the next AI exactly how to write captions for THIS brand. Specific. E.g. 'Write in calm premium Banglish, short elegant lines, lead with occasion and craftsmanship, keep urgency soft, max one emoji.'",
+"whatsapp_instruction": "Ready-to-use instruction for WhatsApp messages in this brand's voice.",
+"image_prompt_instruction": "Ready-to-use instruction for image prompts matching this brand's aesthetic.",
+"diaspora_adaptation_instruction": "Ready-to-use instruction for how to adapt this brand's voice for diaspora audiences (nostalgia/gifting/home-connection) WITHOUT breaking the brand's core tone."
+}
 }
 
 ---
@@ -174,6 +213,8 @@ Do NOT make every brand sound poetic.
 Do NOT make every brand sound emotionally deep.
 
 Do NOT use the same structure repeatedly.
+
+For the new fields (voice_style, product_framing, conversion_style, brand_maturity, trust_requirements, dont_rules, generation_instructions): derive them from what the captions actually show. The generation_instructions especially must be concrete and ready for another AI to follow directly — not vague labels.
 
 Avoid repeating:
 
@@ -250,7 +291,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate the parsed profile has the expected shape
+    // Validate the parsed profile has the expected shape.
+    // NOTE: only the ORIGINAL fields are required — the new rulebook layers
+    // are optional, so an older/partial LLM response can never break extraction.
     if (
       !profile.voice_strength ||
       !profile.brand_personality ||
@@ -308,7 +351,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generate a durable, shareable brand handle (e.g. DESHLY-7K3Q)
+    const brandHandle = await generateBrandHandle();
+
     // Save brand_voice record
+    // The full profile (including the new rulebook layers) is stored in
+    // voice_profile (jsonb), so no schema change is needed for the new fields.
     const { data: brandVoice, error: voiceError } = await supabaseAdmin
       .from("brand_voices")
       .insert({
@@ -318,6 +366,7 @@ export async function POST(request: NextRequest) {
         voice_strength_score: normalizedScore,
         embedding: embedding,
         extracted_by: usedProvider,
+        brand_handle: brandHandle,
       })
       .select()
       .single();
@@ -335,6 +384,7 @@ export async function POST(request: NextRequest) {
       brandVoiceId: brandVoice.id,
       brandId: brand.id,
       brandName: safeBrandName,
+      brandHandle,
       profile,
     });
   } catch (error: any) {
