@@ -720,16 +720,28 @@ export default function DocsPage() {
               </p>
             </div>
             <div className="card reveal">
-              <h3>RAG over structured knowledge</h3>
-              <p>
-                Brand voice embedded in pgvector (1536-dim, IVFFlat). Retrieval
-                augments generation with <b>hand-curated, typed cluster profiles</b>{" "}
-                rather than chunked documents — in-context graph reasoning over
-                relationships between brands, audiences, occasions and channels.
-                Storage is relational today; the conceptual graph is exposed through
-                the DiasporaGraph MCP, so a Phase 3 migration to Neo4j or Apache AGE
-                doesn&apos;t change the tool contract.
-              </p>
+              <h3>RAG + Structured Context</h3>
+              <ul className="bullets">
+                <li>
+                  <strong>Brand voice — retrieved</strong>
+                  Embedded in pgvector (1536-dim, IVFFlat) and pulled by similarity.
+                </li>
+                <li>
+                  <strong>Cluster knowledge — structured</strong>
+                  Already typed profiles, fed to the model directly — reasoning over
+                  brand, audience, occasion and channel, not chunked documents.
+                </li>
+                <li>
+                  <strong>Retrieve where it helps</strong>
+                  Similarity search where it adds value; skipped where structure
+                  already does the job.
+                </li>
+                <li>
+                  <strong>Exposed via MCP</strong>
+                  The whole knowledge layer sits behind our DiasporaGraph MCP server,
+                  so a future storage change never breaks the tools.
+                </li>
+              </ul>
             </div>
             <div className="card reveal">
               <h3>Prompt engineering</h3>
@@ -768,6 +780,7 @@ export default function DocsPage() {
       </section>
 
       {/* MARKET / BUSINESS / EDGE */}
+      {/* MARKET / BUSINESS / EDGE */}
       <section>
         <div className="wrap">
           <div className="eyebrow">10 — Market, Model &amp; Edge</div>
@@ -775,7 +788,8 @@ export default function DocsPage() {
             Where the value <span className="it">compounds.</span>
           </h2>
 
-          <div className="stats reveal" style={{ marginBottom: 38 }}>
+          {/* TAM / SAM / expansion / margin */}
+          <div className="stats reveal" style={{ marginBottom: 22 }}>
             <div className="stat">
               <div className="n">$7B</div>
               <div className="l">TAM · emerging-market D2C w/ diaspora</div>
@@ -794,60 +808,141 @@ export default function DocsPage() {
             </div>
           </div>
 
-          <div className="grid3" style={{ marginTop: 8 }}>
-            <div className="card reveal">
-              <h3>Market</h3>
-              <p>
-                Bangladesh diaspora is the wedge; the architecture is
-                country-agnostic. India, Pakistan, Nigeria, Vietnam, Mexico — every
-                emerging market has a diaspora its brands underserve. Each new market
-                is a data operation, not a rebuild.
-              </p>
+          {/* proven-today KPIs */}
+          <div
+            className="stats reveal"
+            style={{ marginBottom: 38, gridTemplateColumns: "repeat(3,1fr)" }}
+          >
+            <div className="stat">
+              <div className="n">~60s</div>
+              <div className="l">Product → 3 full campaigns (today)</div>
             </div>
-            <div className="card reveal">
-              <h3>Business model</h3>
-              <p>
-                Freemium SaaS. Free: 5 campaigns/mo. Pro ~$29/mo: 100 campaigns.
-                Enterprise: unlimited + self-host + MCP access. A usage-billed
-                intelligence-as-a-tool API is the second revenue line. Target 70%+
-                gross margin.
-              </p>
+            <div className="stat">
+              <div className="n">~48%</div>
+              <div className="l">Token cost cut vs naive (today)</div>
             </div>
-            <div className="card reveal">
-              <h3>Unique advantage</h3>
-              <p>
-                The moat compounds: once a brand connects Meta, every campaign is
-                reconciled against real engagement, building a{" "}
-                <b>per-product, per-diaspora conversion dataset</b> foundation models
-                structurally can&apos;t replicate — they lack the outcome loop. Plus
-                the prompts, the cultural cluster model, and MCP-first design. The UI
-                is rebuildable in weeks; the data flywheel is not.
-              </p>
+            <div className="stat">
+              <div className="n">~$0</div>
+              <div className="l">Marginal cost / free-tier user (today)</div>
             </div>
+          </div>
+
+          <div className="grid2" style={{ marginTop: 8 }}>
             <div className="card reveal">
-              <h3>Competition</h3>
-              <p>
-                Generic AI writers (Jasper, Copy.ai) ignore culture and audience.
-                Social schedulers (Buffer) don&apos;t generate. Deshly is the only
-                culturally-aware, audience-first, multimodal engine for this segment.
-              </p>
+              <h3>Value proposition</h3>
+              <ul className="bullets">
+                <li>
+                  <strong>One product → many campaigns</strong>
+                  Several culture-fit campaigns in ~60 seconds — work that costs a
+                  brand an agency retainer or a hire they can&apos;t afford.
+                </li>
+                <li>
+                  <strong>Product-level, not brand-level</strong>
+                  Per-product, per-diaspora targeting no generic AI tool offers.
+                </li>
+                <li>
+                  <strong>Replaces &quot;post the same to everyone&quot;</strong>
+                  Right message, right audience, right language, right timezone.
+                </li>
+              </ul>
             </div>
+
             <div className="card reveal">
-              <h3>Go-to-market</h3>
-              <p>
-                Direct to Bangladeshi D2C founders via the communities they already
-                live in; agency partnerships as a multi-brand wedge; MCP registry for
-                developer distribution.
-              </p>
+              <h3>Monetization</h3>
+              <ul className="bullets">
+                <li>
+                  <strong>Free — the demand engine</strong>
+                  5 campaigns/mo at ~$0 marginal cost (Groq free tier).
+                </li>
+                <li>
+                  <strong>Pro · ~$29/mo</strong>
+                  100 campaigns, ~80% margin — the SMB brand owner.
+                </li>
+                <li>
+                  <strong>Enterprise · $499+/mo</strong>
+                  Unlimited + self-host + MCP access, ~95% margin.
+                </li>
+                <li>
+                  <strong>Platform line</strong>
+                  Usage-billed intelligence-as-a-tool API. <b>Target 70%+ margin.</b>
+                </li>
+              </ul>
             </div>
+
             <div className="card reveal">
-              <h3>Traction</h3>
-              <p>
-                Working product across 4 surfaces, 3 MCP servers, multi-LLM
-                resilience and a live diaspora map — built and deployed within the
-                BuildFest window. Next: design-partner brands + Meta-connect for the
-                live data loop.
-              </p>
+              <h3>Adoption pathway</h3>
+              <ul className="bullets">
+                <li>
+                  <strong>Land: BD fashion D2C</strong>
+                  A tight community where word travels fast.
+                </li>
+                <li>
+                  <strong>Zero-setup onboarding</strong>
+                  Brands start in minutes with their own captions.
+                </li>
+                <li>
+                  <strong>Agencies = multi-account wedge</strong>
+                  One account, many brands. MCP registry = developer-led growth.
+                </li>
+              </ul>
+            </div>
+
+            <div className="card reveal">
+              <h3>Cross-border readiness</h3>
+              <ul className="bullets">
+                <li>
+                  <strong>Country-agnostic by design</strong>
+                  Zero Bangladesh-specific code in the schema.
+                </li>
+                <li>
+                  <strong>Each market = a data operation</strong>
+                  India, Pakistan, Nigeria, Vietnam, Mexico — <b>not a rebuild.</b>
+                </li>
+                <li>
+                  <strong>Built for the global NRB economy</strong>
+                  And the emerging-market brands serving every diaspora.
+                </li>
+              </ul>
+            </div>
+
+            <div className="card reveal">
+              <h3>Market validation</h3>
+              <ul className="bullets">
+                <li>
+                  <strong>Demand is structural</strong>
+                  13M+ abroad · 3–10× higher order value · 2,400+ brands marketing
+                  blind.
+                </li>
+                <li>
+                  <strong>Founder interviews</strong>
+                  5 Dhaka D2C founders — all confirmed
+                  diaspora orders, none had a tool to target them.
+                </li>
+                <li>
+                  <strong>Next 90 days</strong>
+                  Design-partner brands + Meta-connect for the live data loop.
+                </li>
+              </ul>
+            </div>
+
+            <div className="card reveal">
+              <h3>The compounding moat</h3>
+              <ul className="bullets">
+                <li>
+                  <strong>Outcome loop</strong>
+                  Once a brand connects Meta, every campaign is reconciled against
+                  real engagement.
+                </li>
+                <li>
+                  <strong>A dataset no one else has</strong>
+                  Per-product, per-diaspora conversion data OpenAI &amp; Meta
+                  can&apos;t replicate — they lack the loop.
+                </li>
+                <li>
+                  <strong>It compounds</strong>
+                  More brands → sharper data → better results → more brands.
+                </li>
+              </ul>
             </div>
           </div>
         </div>
