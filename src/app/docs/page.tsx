@@ -71,11 +71,6 @@ const CSS = `
 .dz .card ul.bullets li:last-child{border-bottom:none;padding-bottom:0}
 .dz .card ul.bullets li::before{content:"→";position:absolute;left:0;color:var(--terra);font-family:var(--mono)}
 .dz .card ul.bullets li strong{color:var(--cream);font-weight:600;display:block;margin-bottom:2px}
-.dz .card ul.bullets{list-style:none;padding:0;margin:0}
-.dz .card ul.bullets li{font-size:14.5px;color:var(--cream-dim);padding:10px 0 10px 20px;position:relative;border-bottom:1px solid var(--panel-line)}
-.dz .card ul.bullets li:last-child{border-bottom:none;padding-bottom:0}
-.dz .card ul.bullets li::before{content:"→";position:absolute;left:0;color:var(--terra);font-family:var(--mono)}
-.dz .card ul.bullets li strong{color:var(--cream);font-weight:600;display:block;margin-bottom:2px}
 
 .dz .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--panel-line);border-radius:6px;overflow:hidden}
 .dz .flow .step{background:var(--void-2);padding:28px 24px;position:relative;border-right:1px solid var(--panel-line)}
@@ -210,6 +205,16 @@ export default function DocsPage() {
             <strong>complete localized campaigns</strong> — captions, visuals,
             reels, WhatsApp copy, and timing — for every community, in their
             language and timezone.
+          </p>
+          <p
+            className="lede"
+            style={{ marginTop: 20, color: "var(--cream)", fontSize: 18 }}
+          >
+            <strong>
+              Every product, not just the brand, matched to the audience most
+              likely to buy it — a market Shopify forgot and foundation models
+              can&apos;t serve.
+            </strong>
           </p>
           <div className="hero-meta">
             <span>Multimodal Content Engine</span>
@@ -473,7 +478,7 @@ export default function DocsPage() {
                 </tr>
                 <tr>
                   <td>Automated cluster discovery</td>
-                  <td>Signal scraping → embedding → unsupervised clustering</td>
+                  <td>Signal scraping → embedding → unsupervised clustering (augments the curated set)</td>
                   <td>
                     <span className="badge plan">Phase 3</span>
                   </td>
@@ -718,12 +723,12 @@ export default function DocsPage() {
               <h3>RAG over structured knowledge</h3>
               <p>
                 Brand voice embedded in pgvector (1536-dim, IVFFlat). Retrieval
-                augments generation with typed cluster profiles rather than chunked
-                documents — in-context graph reasoning over relationships between
-                brands, audiences, occasions and channels. Storage is relational
-                today; the conceptual graph is exposed through the DiasporaGraph
-                MCP, so a Phase 3 migration to Neo4j or Apache AGE doesn&apos;t
-                change the tool contract.
+                augments generation with <b>hand-curated, typed cluster profiles</b>{" "}
+                rather than chunked documents — in-context graph reasoning over
+                relationships between brands, audiences, occasions and channels.
+                Storage is relational today; the conceptual graph is exposed through
+                the DiasporaGraph MCP, so a Phase 3 migration to Neo4j or Apache AGE
+                doesn&apos;t change the tool contract.
               </p>
             </div>
             <div className="card reveal">
@@ -769,29 +774,54 @@ export default function DocsPage() {
           <h2>
             Where the value <span className="it">compounds.</span>
           </h2>
+
+          <div className="stats reveal" style={{ marginBottom: 38 }}>
+            <div className="stat">
+              <div className="n">$7B</div>
+              <div className="l">TAM · emerging-market D2C w/ diaspora</div>
+            </div>
+            <div className="stat">
+              <div className="n">$1.4B</div>
+              <div className="l">SAM · social-native D2C brands</div>
+            </div>
+            <div className="stat">
+              <div className="n">50K+</div>
+              <div className="l">India brands · first expansion</div>
+            </div>
+            <div className="stat">
+              <div className="n">70%+</div>
+              <div className="l">Target gross margin</div>
+            </div>
+          </div>
+
           <div className="grid3" style={{ marginTop: 8 }}>
             <div className="card reveal">
               <h3>Market</h3>
               <p>
                 Bangladesh diaspora is the wedge; the architecture is
                 country-agnostic. India, Pakistan, Nigeria, Vietnam, Mexico — every
-                emerging market has a diaspora its brands underserve.
+                emerging market has a diaspora its brands underserve. Each new market
+                is a data operation, not a rebuild.
               </p>
             </div>
             <div className="card reveal">
               <h3>Business model</h3>
               <p>
                 Freemium SaaS. Free: 5 campaigns/mo. Pro ~$29/mo: 100 campaigns.
-                Enterprise: unlimited + self-host + MCP access. Target 70%+ gross
-                margin.
+                Enterprise: unlimited + self-host + MCP access. A usage-billed
+                intelligence-as-a-tool API is the second revenue line. Target 70%+
+                gross margin.
               </p>
             </div>
             <div className="card reveal">
               <h3>Unique advantage</h3>
               <p>
-                The moat is the prompts, the cultural cluster model, and the
-                MCP-first protocol design — not the framework. The UI is rebuildable
-                in weeks; the intelligence is not.
+                The moat compounds: once a brand connects Meta, every campaign is
+                reconciled against real engagement, building a{" "}
+                <b>per-product, per-diaspora conversion dataset</b> foundation models
+                structurally can&apos;t replicate — they lack the outcome loop. Plus
+                the prompts, the cultural cluster model, and MCP-first design. The UI
+                is rebuildable in weeks; the data flywheel is not.
               </p>
             </div>
             <div className="card reveal">
@@ -815,7 +845,8 @@ export default function DocsPage() {
               <p>
                 Working product across 4 surfaces, 3 MCP servers, multi-LLM
                 resilience and a live diaspora map — built and deployed within the
-                BuildFest window.
+                BuildFest window. Next: design-partner brands + Meta-connect for the
+                live data loop.
               </p>
             </div>
           </div>
@@ -937,7 +968,9 @@ export default function DocsPage() {
           </h2>
           <p className="section-lede">
             Three builders behind Deshly — shipping a culturally-intelligent
-            commerce engine from Dhaka to the world.
+            commerce engine from Dhaka to the world. We&apos;re building for a
+            market we live inside: we understand the code-switching, the occasions,
+            and the pull of home a foreign team can&apos;t replicate.
           </p>
           <div className="team reveal">
             <div className="member">
