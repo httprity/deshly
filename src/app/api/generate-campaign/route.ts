@@ -323,6 +323,44 @@ export async function POST(request: NextRequest) {
     });
 
     const generateForCluster = async (cluster: Cluster) => {
+      // --- cache: return saved campaign for identical inputs (instant demo) ---
+      try {
+        const { data: cachedCampaign } = await supabaseAdmin
+          .from("campaigns")
+          .select("*")
+          .eq("brand_voice_id", brandVoiceId)
+          .eq("cluster_id", cluster.id)
+          .eq("product_description", productDescription)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (cachedCampaign) {
+          return {
+            cluster,
+            campaign: {
+              why_this_campaign: cachedCampaign.why_this_campaign || "",
+              caption: cachedCampaign.caption,
+              image_prompts: cachedCampaign.image_prompts,
+              reels_storyboard: cachedCampaign.reels_storyboard,
+              hashtags: cachedCampaign.hashtags || [],
+              whatsapp_message: cachedCampaign.whatsapp_message,
+              posting_time: cachedCampaign.posting_time,
+              channel_recommendation: cachedCampaign.channel_recommendation,
+              predicted_reach_min: cachedCampaign.predicted_reach_min,
+              predicted_reach_max: cachedCampaign.predicted_reach_max,
+              predicted_engagement_min: cachedCampaign.predicted_engagement_min,
+              predicted_engagement_max: cachedCampaign.predicted_engagement_max,
+              reasoning_trace: cachedCampaign.reasoning_trace || "",
+            },
+            campaignId: cachedCampaign.id,
+            success: true,
+          };
+        }
+      } catch {
+        // cache miss or error — fall through to live generation
+      }
+      // --- end cache ---
       const rulebookBlock = hasRulebook
         ? `
 
@@ -406,6 +444,7 @@ ${JSON.stringify(compactCluster(cluster))}`;
             brand_voice_id: brandVoiceId,
             cluster_id: cluster.id,
             product_description: productDescription,
+            why_this_campaign: finalCampaign.why_this_campaign,
             caption: finalCampaign.caption,
             image_prompts: finalCampaign.image_prompts,
             reels_storyboard: finalCampaign.reels_storyboard,
