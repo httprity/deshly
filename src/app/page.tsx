@@ -38,6 +38,7 @@ export default function Home() {
   const featuresGridRef = useRevealUp(true);
   const stackRef = useRevealUp(true);
   const ctaRef = useRevealUp();
+  const pricingRef = useRevealUp(true);
 
   return (
     <main className="grain bg-void text-cream relative overflow-x-hidden">
@@ -54,6 +55,7 @@ export default function Home() {
             <Link href="/brand-dna" className="text-cream/60 hover:text-cream transition-colors">Brand DNA</Link>
             <Link href="/generator" className="text-cream/60 hover:text-cream transition-colors">Generator</Link>
             <Link href="/clusters" className="text-cream/60 hover:text-cream transition-colors">Clusters</Link>
+            <a href="#pricing" className="text-cream/60 hover:text-cream transition-colors">Pricing</a>
             <Link href="/docs" className="text-cream/60 hover:text-cream transition-colors">Docs</Link>
           </div>
 
@@ -315,6 +317,91 @@ export default function Home() {
 
           <div data-reveal-child className="mt-12 text-center">
             <MagneticButton href="/docs" variant="outline" size="md">See the full audit trail</MagneticButton>
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING */}
+      <section id="pricing" ref={pricingRef} className="scroll-mt-24 py-32 px-6 md:px-10 relative border-t border-cream/5">
+        <GradientOrbs intensity="subtle" />
+        <div className="relative max-w-[1400px] mx-auto">
+          <div data-reveal-child className="mb-16 max-w-3xl">
+            <div className="flex items-center gap-3 mb-6 text-[10px] uppercase tracking-[0.25em] text-brass">
+              <span className="w-8 h-px bg-brass" />
+              <span>Pricing</span>
+            </div>
+            <h2 className="font-serif text-[clamp(2.5rem,6vw,5rem)] leading-[1] tracking-tight mb-6">
+              Simple plans, <span className="italic text-terracotta">strong margins.</span>
+            </h2>
+            <p className="text-lg text-cream/55 leading-relaxed max-w-xl">
+              Freemium SaaS — start free, upgrade as you grow. Every tier runs on the same culturally-intelligent engine.
+            </p>
+          </div>
+
+          <div data-reveal-child className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            {/* FREE */}
+            <div className="glow-card flex flex-col bg-ink rounded-3xl p-8 md:p-10 border border-cream/8">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-2">Free</div>
+              <div className="text-sm text-cream/50 mb-8">For trying it out</div>
+              <div className="font-serif text-6xl tracking-tight leading-none text-cream">$0</div>
+              <div className="font-mono text-xs text-cream/45 mt-3 mb-8">forever</div>
+              <ul className="flex flex-col gap-3 flex-1 mb-8">
+                {["5 campaigns / month", "All 13 audience clusters", "Brand DNA extraction", "Community support"].map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-sm text-cream/65 leading-snug">
+                    <span className="text-terracotta">→</span>{f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/brand-dna" className="text-center text-sm font-medium py-3.5 rounded-full border border-cream/15 text-cream/80 hover:text-cream hover:border-terracotta/60 hover:shadow-[0_0_28px_rgba(213,97,62,0.20)] transition-all duration-300">
+                Start free
+              </Link>
+            </div>
+
+            {/* PRO — featured */}
+            <div className="glow-card relative flex flex-col bg-ink rounded-3xl p-8 md:p-10 border border-terracotta/60 overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 50% 0%, rgba(213, 97, 62, 0.10), transparent 65%)" }} />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 font-mono text-[10px] uppercase tracking-[0.16em] bg-terracotta text-void px-3 py-1 rounded-b-md">
+                Most popular
+              </div>
+              <div className="relative flex flex-col flex-1">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-2 mt-3">Pro</div>
+                <div className="text-sm text-cream/50 mb-8">For growing brands</div>
+                <div className="font-serif text-6xl tracking-tight leading-none text-cream">$29</div>
+                <div className="font-mono text-xs text-cream/45 mt-3 mb-8">per month</div>
+                <ul className="flex flex-col gap-3 flex-1 mb-8">
+                  {["100 campaigns / month", "Priority generation", "Product-level matching", "All export formats", "Email support"].map((f) => (
+                    <li key={f} className="flex items-start gap-3 text-sm text-cream/70 leading-snug">
+                      <span className="text-terracotta">→</span>{f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/brand-dna" className="btn-glow-pro block text-center text-sm font-semibold py-3.5 rounded-full bg-gradient-to-r from-terracotta to-terracotta/90 text-void">
+                  Start Pro
+                </Link>
+              </div>
+            </div>
+
+            {/* ENTERPRISE */}
+            <div className="glow-card flex flex-col bg-ink rounded-3xl p-8 md:p-10 border border-cream/8">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-2">Enterprise</div>
+              <div className="text-sm text-cream/50 mb-8">For agencies &amp; scale</div>
+              <div className="font-serif text-6xl tracking-tight leading-none text-cream">$299+</div>
+              <div className="font-mono text-xs text-cream/45 mt-3 mb-8">per month</div>
+              <ul className="flex flex-col gap-3 flex-1 mb-8">
+                {["Unlimited campaigns", "Multi-account workspaces", "MCP API access", "Self-host option", "Dedicated support"].map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-sm text-cream/65 leading-snug">
+                    <span className="text-terracotta">→</span>{f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/" className="text-center text-sm font-medium py-3.5 rounded-full border border-cream/15 text-cream/80 hover:text-cream hover:border-terracotta/60 hover:shadow-[0_0_28px_rgba(213,97,62,0.20)] transition-all duration-300">
+                Contact us
+              </Link>
+            </div>
+          </div>
+
+          <div data-reveal-child className="mt-10 text-center font-mono text-[11px] text-cream/40 tracking-wide">
+            All plans · 70%+ gross margin · brand-owned content only, no consumer data
           </div>
         </div>
       </section>

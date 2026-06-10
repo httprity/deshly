@@ -177,3 +177,72 @@ body {
 .font-mono {
   font-family: var(--font-mono);
 }
+/* ===== Deshly pricing — animated glow ===== */
+@property --deshly-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes deshly-rotate {
+  to { --deshly-angle: 360deg; }
+}
+
+/* Pro button — constant animated glowing border + outer bloom */
+.btn-glow-pro {
+  position: relative;
+  isolation: isolate;
+  box-shadow: 0 0 30px rgba(213, 97, 62, 0.40);
+  transition: box-shadow .3s ease, transform .3s ease;
+}
+.btn-glow-pro::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(from var(--deshly-angle),
+    transparent 0%, #f2ead8 10%, #e08a6c 25%, transparent 45%,
+    transparent 55%, #e08a6c 75%, #f2ead8 90%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  animation: deshly-rotate 3s linear infinite;
+  pointer-events: none;
+}
+.btn-glow-pro:hover {
+  box-shadow: 0 0 48px rgba(213, 97, 62, 0.65);
+  transform: translateY(-2px);
+}
+
+/* Pricing cards — animated glowing border on hover */
+.glow-card {
+  position: relative;
+  isolation: isolate;
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from var(--deshly-angle),
+    transparent 0%, #d5613e 15%, #e08a6c 30%, transparent 50%,
+    transparent 60%, #b8956a 80%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity .4s ease;
+  pointer-events: none;
+}
+.glow-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 60px -20px rgba(213, 97, 62, 0.35);
+}
+.glow-card:hover::before {
+  opacity: 1;
+  animation: deshly-rotate 3s linear infinite;
+}
