@@ -261,7 +261,35 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    // --- idempotency: reuse existing voice for identical captions (instant demo) ---
+    try {
+      const { data: existingVoice } = await supabaseAdmin
+        .from("brand_voices")
+        .select("id, brand_id, voice_profile, voice_strength_score")
+        .eq("raw_captions", captions)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
+      if (existingVoice) {
+        const { data: brandRow } = await supabaseAdmin
+          .from("brands")
+          .select("name")
+          .eq("id", existingVoice.brand_id)
+          .maybeSingle();
+        return NextResponse.json({
+          success: true,
+          brandVoiceId: existingVoice.id,
+          brandId: existingVoice.brand_id,
+          brandName: brandRow?.name || brandName?.trim() || "Untitled Brand",
+          profile: existingVoice.voice_profile,
+          voiceStrength: existingVoice.voice_strength_score,
+        });
+      }
+    } catch {
+      // no cached voice — fall through to live extraction
+    }
+    // --- end idempotency ---
     // Build the full prompt
     const fullPrompt = EXTRACTION_PROMPT + captions;
 

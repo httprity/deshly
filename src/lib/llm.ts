@@ -83,7 +83,7 @@ export async function callLLM(opts: LLMOptions): Promise<LLMResult> {
   if (gemini) {
     try {
       const model = gemini.getGenerativeModel({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash-lite",
         generationConfig: {
           temperature: opts.temperature ?? 0.6,
           maxOutputTokens: opts.maxTokens ?? 8192,

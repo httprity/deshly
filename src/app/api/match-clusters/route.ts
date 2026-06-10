@@ -295,6 +295,22 @@ ${JSON.stringify(compactVoice)}
 CLUSTERS (only markets this brand can serve):
 ${JSON.stringify(clusterSummaries)}`;
 
+    // --- cache: return saved match result for identical inputs (instant demo) ---
+    try {
+      const { data: cachedMatch } = await supabaseAdmin
+        .from("match_cache")
+        .select("matches")
+        .eq("brand_voice_id", brandVoiceId)
+        .eq("product_description", productDescription)
+        .maybeSingle();
+
+      if (cachedMatch?.matches) {
+        return NextResponse.json(cachedMatch.matches);
+      }
+    } catch {
+      // no cached match — fall through to live matching
+    }
+    // --- end cache ---
     const llmResult = await callLLM({
       userPrompt: fullPrompt,
       jsonMode: true,
@@ -400,13 +416,29 @@ ${JSON.stringify(clusterSummaries)}`;
       }))
     );
 
-    return NextResponse.json({
+    const responsePayload = {
       success: true,
       productRead: parsed.product_read || null,
       matches: enrichedMatches,
       hiddenDiasporaCount,
       fulfillmentNote: note,
-    });
+    };
+
+    // save the full result so the demo replays instantly next time (best-effort)
+    try {
+      await supabaseAdmin.from("match_cache").upsert(
+        {
+          brand_voice_id: brandVoiceId,
+          product_description: productDescription,
+          matches: responsePayload,
+        },
+        { onConflict: "brand_voice_id,product_description" }
+      );
+    } catch {
+      // cache write failed — not fatal
+    }
+
+    return NextResponse.json(responsePayload);
   } catch (error: any) {
     console.error("Match clusters error:", error);
     return NextResponse.json(
