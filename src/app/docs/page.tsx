@@ -513,47 +513,71 @@ export default function DocsPage() {
             scale demands it.
           </p>
           <div className="diagram reveal">
-          <pre>{`   ┌─────────────────────────── CLIENT (Next.js 16 App Router) ──────────────────────────┐
-   │   /brand-dna        /generator         /clusters          /docs                     │
-   └──────────────────────────────────────┬───────────────────────────────────────────────┘
-                                          │  fetch (REST)
-   ┌──────────────────────────────────────▼───────────────────────────────────────────────┐
-   │   API ROUTES   /api/extract-brand-voice   /api/match-clusters   /api/generate-campaign │
-   └──────────────────────────────────────┬───────────────────────────────────────────────┘
-                                          │
-   ┌──────────────────────────────────────▼───────────────────────────────────────────────┐
-   │   RETRIEVAL + REASONING PIPELINE                                                     │
-   │   live ▸ Naive RAG retrieval — brand voice by id / similarity                        │
-   │   live ▸ Vector search — pgvector cosine, IVFFlat index                              │
-   │   live ▸ Structured-context payload builder — typed cluster profiles, no chunking    │
-   │   live ▸ Relational filters — country · segment · occasion                           │
-   │   live ▸ Hybrid search — keyword + vector + structured filters                       │
-   │   live ▸ Query rewriting / HyDE                                                      │
-   │   live ▸ Graph RAG — multi-hop relationship traversal via Graph DB                   │
-   └───────────┬───────────────────────────────────────────────────────┬───────────────────┘
-               │                                                       │
-       ┌───────────▼───────────┐                              ┌────────────▼─────────────────────┐
-       │  LLM ORCHESTRATOR     │                              │  MCP SERVERS / RAG TOOL LAYER (×3)│
-       │  Groq → Together →    │                              │  DiasporaGraph — graph + audience│
-       │  Gemini → Ollama      │                              │     relationship reasoning       │
-       │  retry + backoff      │                              │  BrandVoice — brand DNA retrieval│
-       │                       │                              │  CampaignGenerator — campaign    │
-       │                       │                              │     context assembly             │
-       └───────────┬───────────┘                              └────────────┬─────────────────────┘
-                   │  embeddings + inference                            │ stdio / HTTP
-       ┌───────────▼──────────────────────────────┐          ┌───────────▼───────────────────────┐
-       │   SUPABASE — PostgreSQL + pgvector        │          │   GRAPH DB — Neo4j / Apache AGE    │
-       │   brands · brand_voices(embedding)        │          │   product → category → occasion    │
-       │   clusters · campaigns · ingestion_logs   │          │   → audience → channel → campaign  │
-       │   structured app data + vector memory     │          │   multi-hop traversal for Graph RAG│
-       └───────────────────────────────────────────┘          └───────────────────────────────────┘
-                                  │
-                                  │  Phase 3 → expand graph coverage with campaign outcomes,
-                                  ▼  performance reconciliation, and automated cluster discovery
-                   ▲
-       ┌───────────┴───────────┐
-       │  Reddit scraper       │  community signals → cluster confidence
-       └───────────────────────┘`}</pre>
+          <pre>{`┌─────────────────────────── CLIENT (Next.js 16 App Router) ──────────────────────────┐
+│   /brand-dna        /generator         /clusters          /docs                     │
+└──────────────────────────────────────┬───────────────────────────────────────────────┘
+                                       │  fetch (REST)
+┌──────────────────────────────────────▼───────────────────────────────────────────────┐
+│   API ROUTES                                                                        │
+│   /api/extract-brand-voice   /api/match-clusters   /api/generate-campaign          │
+│   /api/log-signal            /api/feedback         /api/clusters-list              │
+└──────────────────────────────────────┬───────────────────────────────────────────────┘
+                                       │
+┌──────────────────────────────────────▼───────────────────────────────────────────────┐
+│   RETRIEVAL + REASONING PIPELINE                                                     │
+│   live ▸ Naive RAG retrieval — brand voice by id / similarity                        │
+│   live ▸ Vector search — pgvector cosine, IVFFlat index                              │
+│   live ▸ Structured-context payload builder — typed cluster profiles, no chunking    │
+│   live ▸ Relational filters — country · segment · occasion · fulfillment             │
+│   live ▸ Hybrid search — keyword + vector + structured filters                       │
+│   live ▸ Query rewriting / HyDE                                                      │
+│   live ▸ Graph RAG — multi-hop relationship traversal via Graph DB                   │
+│   live ▸ Learning loop injection — prior copy/select/edit/reject signals             │
+└───────────┬───────────────────────────────────────────────────────┬───────────────────┘
+            │                                                       │
+    ┌───────▼───────────────┐                              ┌────────▼──────────────────────┐
+    │  LLM ORCHESTRATOR     │                              │  MCP SERVERS / RAG TOOL LAYER │
+    │  Groq → Together →    │                              │  DiasporaGraph — graph +      │
+    │  Gemini → Ollama      │                              │     audience reasoning        │
+    │  retry + backoff      │                              │  BrandVoice — brand DNA       │
+    │  embeddings +         │                              │     retrieval                 │
+    │  inference            │                              │  CampaignGenerator — campaign │
+    └───────┬───────────────┘                              │     context assembly          │
+            │                                              │  SignalMemory — feedback loop │
+            │                                              └────────┬──────────────────────┘
+            │                                                       │ stdio / HTTP
+┌───────────▼──────────────────────────────┐          ┌─────────────▼─────────────────────┐
+│   SUPABASE — PostgreSQL + pgvector        │          │   GRAPH DB — Neo4j / Apache AGE   │
+│   brands · brand_voices(embedding)        │          │   product → category → occasion   │
+│   clusters · campaigns · user_signals     │          │   → audience → channel → campaign │
+│   feedback_events · ingestion_logs        │          │   → outcome                       │
+│   structured app data + vector memory     │          │   multi-hop traversal for Graph RAG│
+└───────────┬──────────────────────────────┘          └─────────────┬─────────────────────┘
+            │                                                       │
+            └───────────────────────┬───────────────────────────────┘
+                                    │
+┌───────────────────────────────────▼──────────────────────────────────────────────────┐
+│   LIVE LEARNING LOOP                                                                 │
+│   user actions: copy · select · edit · regenerate · reject · publish                 │
+│   stored as user_signals + feedback_events                                           │
+│   retrieved in future generations to adapt audience ranking, tone, and campaign type │
+└───────────────────────────────────┬──────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────────────────┐
+│   OUTPUT                                                                             │
+│   ranked audiences · fit scores · reasoning path · caption · image prompts           │
+│   reels storyboard · WhatsApp copy · hashtags · best time · channel recommendation   │
+└──────────────────────────────────────────────────────────────────────────────────────┘
+
+                         ▲
+┌────────────────────────┴────────────────┐
+│   Reddit scraper / community signals     │
+│   public signals → cluster confidence     │
+│   Phase 3 → automated cluster discovery, │
+│   performance reconciliation, deeper      │
+│   campaign-outcome graph expansion        │
+└──────────────────────────────────────────┘`}</pre>
           </div>
         </div>
       </section>
@@ -567,61 +591,74 @@ export default function DocsPage() {
             <span className="it">Feedback.</span>
           </h2>
           <div className="grid3" style={{ marginTop: 8 }}>
-            <div className="card reveal">
-              <h3>
-                <span className="num">→</span>Input
-              </h3>
-              <p>
-                Brand captions and a product description. Validated and sanitized
-                server-side (100–20,000 chars, ≥10 caption blocks).
-              </p>
-            </div>
-            <div className="card reveal">
-              <h3>
-                <span className="num">→</span>Processing
-              </h3>
-              <p>
-                Captions compacted to a 5-field voice payload; clusters trimmed to
-                11 fields. Context built for the LLM as structured knowledge.
-              </p>
-            </div>
-            <div className="card reveal">
-              <h3>
-                <span className="num">→</span>AI
-              </h3>
-              <p>
-                Multi-LLM inference + pgvector retrieval. Strict JSON output,
-                schema-validated, banned-phrase enforced.
-              </p>
-            </div>
-            <div className="card reveal">
-              <h3>
-                <span className="num">→</span>Output
-              </h3>
-              <p>
-                Ranked audiences and multimodal campaign packages rendered in-app,
-                one click to copy the full package.
-              </p>
-            </div>
-            <div className="card reveal">
-              <h3>
-                <span className="num">→</span>Feedback <span className="tag">Phase 2</span>
-              </h3>
-              <p>
-                Published-campaign metrics pulled from Meta Insights, reconciled
-                against predictions.
-              </p>
-            </div>
-            <div className="card reveal">
-              <h3>
-                <span className="num">→</span>Learning <span className="tag">Phase 3</span>
-              </h3>
-              <p>
-                Reconciliation data trains a model that sharpens future predictions
-                — AI that improves over time.
-              </p>
-            </div>
-          </div>
+  <div className="card reveal">
+    <h3>
+      <span className="num">→</span>Input
+    </h3>
+    <p>
+      Brand captions and a product description. Validated and sanitized
+      server-side (100–20,000 chars, ≥10 caption blocks).
+    </p>
+  </div>
+
+  <div className="card reveal">
+    <h3>
+      <span className="num">→</span>Processing
+    </h3>
+    <p>
+      Captions are compacted into a structured voice payload; clusters are
+      trimmed into high-signal fields. Context is built for the LLM as
+      structured knowledge — combining brand voice, product traits,
+      audience clusters, graph relationships, and prior user signals.
+    </p>
+  </div>
+
+  <div className="card reveal">
+    <h3>
+      <span className="num">→</span>AI
+    </h3>
+    <p>
+      Multi-LLM inference + pgvector retrieval + Graph RAG. Deshly uses
+      structured contextual RAG, hybrid search, query rewriting / HyDE, and
+      MCP tools to retrieve the right brand, product, audience, and campaign
+      context. Graph RAG performs multi-hop relationship traversal through
+      the Graph DB, while pgvector handles semantic brand and campaign memory.
+      Outputs are strict JSON, schema-validated, and banned-phrase enforced.
+    </p>
+  </div>
+
+  <div className="card reveal">
+    <h3>
+      <span className="num">→</span>Output
+    </h3>
+    <p>
+      Ranked audiences and multimodal campaign packages rendered in-app:
+      fit scores, reasoning, captions, image prompts, reels storyboard,
+      WhatsApp copy, hashtags, best time, and channel recommendation.
+    </p>
+  </div>
+
+  <div className="card reveal">
+    <h3>
+      <span className="num">→</span>Feedback <span className="tag">Live</span>
+    </h3>
+    <p>
+      User actions — copy, select, edit, regenerate, reject, and publish —
+      are stored as user_signals and feedback_events.
+    </p>
+  </div>
+
+  <div className="card reveal">
+    <h3>
+      <span className="num">→</span>Learning <span className="tag">Live</span>
+    </h3>
+    <p>
+      Deshly retrieves prior user signals in future generations to adapt
+      audience ranking, tone, campaign format, and recommendations for
+      that brand.
+    </p>
+  </div>
+</div>
         </div>
       </section>
 
@@ -780,7 +817,7 @@ export default function DocsPage() {
               <h3>Explainability</h3>
               <p>
                 Every match returns a plain-language &quot;why this works.&quot;
-                Predictions are anchored to real cluster baselines, not invented —
+                Predictions are anchored to curated cluster baselines today, with Meta performance reconciliation planned for Phase 3. —
                 and surfaced as qualitative labels, not raw noise.
               </p>
             </div>
@@ -1011,65 +1048,103 @@ export default function DocsPage() {
 
       {/* PERFORMANCE & SECURITY */}
       <section>
-        <div className="wrap">
-          <div className="eyebrow">12 — Performance &amp; Security</div>
-          <h2>
-            Fast, frugal, <span className="it">guarded.</span>
-          </h2>
-          <div className="grid2" style={{ marginTop: 8 }}>
-            <div className="card reveal">
-              <h3>Performance &amp; scalability</h3>
-              <ul className="bullets">
-                <li>
-                  <strong>~48% token reduction</strong>
-                  Context trimming, JSON mode, tight max_tokens caps vs naive prompts.
-                </li>
-                <li>
-                  <strong>Rate-limit aware</strong>
-                  Sequential generation with inter-call stagger; multi-provider fallback prevents hard failures.
-                </li>
-                <li>
-                  <strong>Phase 2 — speed</strong>
-                  Prompt caching, result caching, parallel generation on paid tiers, multi-region replicas.
-                </li>
-                <li>
-                  <strong>Phase 3 — graph layer</strong>
-                  Neo4j or Apache AGE for multi-hop queries when cluster count exceeds ~500 and join complexity outgrows relational storage.
-                </li>
-              </ul>
-            </div>
-            <div className="card reveal">
-              <h3>Security &amp; access</h3>
-              <ul className="bullets">
-                <li>
-                  <strong>Auth disabled for judging</strong>
-                  Evaluators can test every surface instantly with no sign-up friction. Full email + OAuth onboarding ships in the production build.
-                </li>
-                <li>
-                  <strong>Multi-tenant ready</strong>
-                  Supabase Row-Level Security for brand workspaces and OAuth-scoped MCP endpoints (Phase 2).
-                </li>
-                <li>
-                  <strong>Server-side only DB access</strong>
-                  Service-role keys live in env vars, never committed; the client never touches the database directly.
-                </li>
-                <li>
-                  <strong>Schema-validated outputs</strong>
-                  Every LLM response is parsed and validated against typed contracts before persistence.
-                </li>
-                <li>
-                  <strong>No consumer PII</strong>
-                  Deshly processes brand-owned content only. Reddit signals are aggregated to cluster level.
-                </li>
-                <li>
-                  <strong>Compliance &amp; audit</strong>
-                  GDPR / DPDP compliance and audit logging on the Phase 2 roadmap for enterprise rollout.
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+  <div className="wrap">
+    <div className="eyebrow">12 — Performance &amp; Security</div>
+    <h2>
+      Fast, frugal, <span className="it">guarded.</span>
+    </h2>
+
+    <div className="grid2" style={{ marginTop: 8 }}>
+      <div className="card reveal">
+        <h3>Performance &amp; scalability</h3>
+        <ul className="bullets">
+          <li>
+            <strong>~48% token reduction</strong>
+            Context trimming, compact structured payloads, JSON mode, and tight
+            max_tokens caps reduce cost versus naive prompt construction.
+          </li>
+
+          <li>
+            <strong>Rate-limit aware</strong>
+            Sequential generation, inter-call staggering, retry/backoff, and
+            multi-provider fallback reduce dependency on any single LLM provider.
+          </li>
+
+          <li>
+            <strong>Live graph reasoning</strong>
+            Graph RAG uses the Graph DB and MCP tool layer for multi-hop
+            product → occasion → audience → channel reasoning before generation.
+          </li>
+
+          <li>
+            <strong>Live learning loop</strong>
+            Copy, select, edit, regenerate, reject, and publish actions are stored
+            as feedback signals and reused in future recommendations.
+          </li>
+
+          <li>
+            <strong>Phase 2 — speed upgrades</strong>
+            Prompt caching, result caching, parallel generation on paid tiers, and
+            multi-region replicas improve latency as usage grows.
+          </li>
+
+          <li>
+            <strong>Phase 3 — outcome expansion</strong>
+            Meta performance reconciliation, campaign-outcome graph expansion, and
+            automated cluster discovery deepen the learning layer over time.
+          </li>
+        </ul>
+      </div>
+
+      <div className="card reveal">
+        <h3>Security &amp; access</h3>
+        <ul className="bullets">
+          <li>
+            <strong>Auth disabled for judging</strong>
+            Evaluators can test every surface instantly with no sign-up friction.
+            Full email + OAuth onboarding ships in the production build.
+          </li>
+
+          <li>
+            <strong>Multi-tenant ready</strong>
+            Supabase Row-Level Security for brand workspaces and OAuth-scoped MCP
+            endpoints is prepared for the Phase 2 production rollout.
+          </li>
+
+          <li>
+            <strong>Server-side only DB access</strong>
+            Service-role keys live in environment variables and are never exposed
+            to the client. The browser calls API routes, not the database directly.
+          </li>
+
+          <li>
+            <strong>Schema-validated outputs</strong>
+            Every LLM response is parsed and validated against typed contracts
+            before persistence or display.
+          </li>
+
+          <li>
+            <strong>PII-aware processing</strong>
+            Deshly is designed around brand-owned content and aggregated market
+            signals. Personal identifiers can be masked before model processing.
+          </li>
+
+          <li>
+            <strong>No consumer surveillance</strong>
+            Reddit and community signals are aggregated to cluster level. Deshly
+            does not require individual consumer profiles for its core workflow.
+          </li>
+
+          <li>
+            <strong>Compliance &amp; audit roadmap</strong>
+            GDPR / DPDP controls, audit logging, and enterprise governance are on
+            the Phase 2 roadmap for production and self-hosted deployments.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* TEAM */}
       <section id="team">
@@ -1119,7 +1194,7 @@ export default function DocsPage() {
               <span className="v">v1.0 — Prelim submission</span>
               <p>
                 Four product surfaces live. Token optimization (~48%). Caption
-                counter fix. Three MCP servers documented. Live /docs whitepaper
+                counter fix. Three MCP servers are implemented & documented. Live /docs whitepaper
                 shipped.
               </p>
             </div>
