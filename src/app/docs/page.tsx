@@ -439,6 +439,16 @@ export default function DocsPage() {
                   </td>
                 </tr>
                 <tr>
+                  <td>Graph RAG reasoning</td>
+                  <td>
+                    Relationship-based reasoning over Postgres relationship tables
+                    and MCP tools (brand → product → occasion → audience → channel)
+                  </td>
+                  <td>
+                    <span className="badge live">Live</span>
+                  </td>
+                </tr>
+                <tr>
                   <td>Interactive diaspora map</td>
                   <td>Leaflet cluster explorer with cultural detail panels</td>
                   <td>
@@ -483,16 +493,7 @@ export default function DocsPage() {
                     <span className="badge plan">Phase 3</span>
                   </td>
                 </tr>
-                <tr>
-                  <td>Graph DB layer</td>
-                  <td>
-                    Native graph storage (Neo4j or Apache AGE) for multi-hop
-                    brand-cluster-occasion-performance queries
-                  </td>
-                  <td>
-                    <span className="badge plan">Phase 3</span>
-                  </td>
-                </tr>
+               
               </tbody>
             </table>
           </div>
@@ -512,27 +513,43 @@ export default function DocsPage() {
             scale demands it.
           </p>
           <div className="diagram reveal">
-            <pre>{`   ┌─────────────────────────── CLIENT (Next.js 16 App Router) ──────────────────────────┐
+          <pre>{`   ┌─────────────────────────── CLIENT (Next.js 16 App Router) ──────────────────────────┐
    │   /brand-dna        /generator         /clusters          /docs                     │
    └──────────────────────────────────────┬───────────────────────────────────────────────┘
                                           │  fetch (REST)
    ┌──────────────────────────────────────▼───────────────────────────────────────────────┐
    │   API ROUTES   /api/extract-brand-voice   /api/match-clusters   /api/generate-campaign │
+   └──────────────────────────────────────┬───────────────────────────────────────────────┘
+                                          │
+   ┌──────────────────────────────────────▼───────────────────────────────────────────────┐
+   │   RETRIEVAL + REASONING PIPELINE                                                     │
+   │   live ▸ Naive RAG retrieval — brand voice by id / similarity                        │
+   │   live ▸ Vector search — pgvector cosine, IVFFlat index                              │
+   │   live ▸ Structured-context payload builder — typed cluster profiles, no chunking    │
+   │   live ▸ Relational filters — country · segment · occasion                           │
+   │   live ▸ Hybrid search — keyword + vector + structured filters                       │
+   │   live ▸ Query rewriting / HyDE                                                      │
+   │   live ▸ Graph RAG — multi-hop relationship traversal via Graph DB                   │
    └───────────┬───────────────────────────────────────────────────────┬───────────────────┘
                │                                                       │
-       ┌───────────▼───────────┐                              ┌────────────▼────────────┐
-       │  LLM ORCHESTRATOR     │                              │   MCP SERVERS (×3)       │
-       │  Groq → Together →    │                              │   DiasporaGraph          │
-       │  Gemini → Ollama      │                              │   BrandVoice             │
-       │  retry + backoff      │                              │   CampaignGenerator      │
-       └───────────┬───────────┘                              └────────────┬────────────┘
+       ┌───────────▼───────────┐                              ┌────────────▼─────────────────────┐
+       │  LLM ORCHESTRATOR     │                              │  MCP SERVERS / RAG TOOL LAYER (×3)│
+       │  Groq → Together →    │                              │  DiasporaGraph — graph + audience│
+       │  Gemini → Ollama      │                              │     relationship reasoning       │
+       │  retry + backoff      │                              │  BrandVoice — brand DNA retrieval│
+       │                       │                              │  CampaignGenerator — campaign    │
+       │                       │                              │     context assembly             │
+       └───────────┬───────────┘                              └────────────┬─────────────────────┘
                    │  embeddings + inference                            │ stdio / HTTP
-       ┌───────────▼────────────────────────────────────────────────────────▼────────────────┐
-       │   SUPABASE — PostgreSQL + pgvector                                                  │
-       │   brands · brand_voices(embedding) · clusters · campaigns · ingestion_logs          │
-       └───────────────────────────────────────────────────────────────────────────────────────┘
-                                  │  Phase 3 → migrate relationship-heavy queries to graph DB
-                                  ▼  (Neo4j / Apache AGE) behind the same MCP contract
+       ┌───────────▼──────────────────────────────┐          ┌───────────▼───────────────────────┐
+       │   SUPABASE — PostgreSQL + pgvector        │          │   GRAPH DB — Neo4j / Apache AGE    │
+       │   brands · brand_voices(embedding)        │          │   product → category → occasion    │
+       │   clusters · campaigns · ingestion_logs   │          │   → audience → channel → campaign  │
+       │   structured app data + vector memory     │          │   multi-hop traversal for Graph RAG│
+       └───────────────────────────────────────────┘          └───────────────────────────────────┘
+                                  │
+                                  │  Phase 3 → expand graph coverage with campaign outcomes,
+                                  ▼  performance reconciliation, and automated cluster discovery
                    ▲
        ┌───────────┴───────────┐
        │  Reddit scraper       │  community signals → cluster confidence
@@ -859,8 +876,8 @@ export default function DocsPage() {
                   100 campaigns, ~80% margin — the SMB brand owner.
                 </li>
                 <li>
-                  <strong>Enterprise · $499+/mo</strong>
-                  Unlimited + self-host + MCP access, ~95% margin.
+                  <strong>Enterprise · $299+/mo</strong>
+                  Unlimited + self-host + MCP access, ~70% margin.
                 </li>
                 <li>
                   <strong>Platform line</strong>
@@ -985,7 +1002,7 @@ export default function DocsPage() {
                 <li>Automated cluster discovery</li>
                 <li>Marketplace integrations</li>
                 <li>Enterprise self-host + RBAC</li>
-                <li>Graph DB migration (Neo4j / Apache AGE)</li>
+          
               </ul>
             </div>
           </div>

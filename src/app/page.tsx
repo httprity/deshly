@@ -435,7 +435,7 @@ export default function Home() {
               <Link href="/" className="font-serif italic text-3xl tracking-tight">
                 Deshly<span className="text-terracotta">.</span>
               </Link>
-              <div className="font-bangla text-2xl text-brass/60 mt-3 italic">বেশলি</div>
+              
               <p className="text-cream/45 text-sm max-w-md mt-6 leading-relaxed">
                 Marketing intelligence for the Bangladeshi diaspora. Built in Dhaka. Speaks every culture.
               </p>
