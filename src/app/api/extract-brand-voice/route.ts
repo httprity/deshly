@@ -292,9 +292,10 @@ export async function POST(request: NextRequest) {
     // --- end idempotency ---
     // Build the full prompt
     const fullPrompt = EXTRACTION_PROMPT + captions;
-
+      
     // Call LLM with fallback chain (Groq → Together → Gemini → Ollama)
     const llmResult = await callLLM({
+      
       userPrompt: fullPrompt,
       jsonMode: true,
       temperature: 0.35,
@@ -407,14 +408,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      brandVoiceId: brandVoice.id,
-      brandId: brand.id,
-      brandName: safeBrandName,
-      brandHandle,
-      profile,
-    });
+    // --- idempotency: reuse existing voice for identical captions (instant demo) ---
+    try {
+      const { data: existingVoice } = await supabaseAdmin
+        .from("brand_voices")
+        .select("id, brand_id, voice_profile, brand_handle")
+        .eq("raw_captions", captions)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingVoice) {
+        const { data: brandRow } = await supabaseAdmin
+          .from("brands")
+          .select("name")
+          .eq("id", existingVoice.brand_id)
+          .maybeSingle();
+        return NextResponse.json({
+          success: true,
+          brandVoiceId: existingVoice.id,
+          brandId: existingVoice.brand_id,
+          brandName: brandRow?.name || brandName?.trim() || "Untitled Brand",
+          brandHandle: existingVoice.brand_handle,
+          profile: existingVoice.voice_profile,
+        });
+      }
+    } catch {
+      // no cached voice — fall through to live extraction
+    }
+    // --- end idempotency ---
   } catch (error: any) {
     console.error("Extract brand voice error:", error);
     return NextResponse.json(

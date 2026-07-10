@@ -101,14 +101,14 @@ export default function ClustersPage() {
             onClick={() => setFilter(f)}
             className={`px-5 py-2.5 rounded-full text-[11px] uppercase tracking-[0.15em] font-medium transition-all ${
               filter === f
-                ? "bg-gradient-to-r from-terracotta to-terracotta-deep text-cream shadow-[0_0_20px_rgba(213,97,62,0.25)]"
-                : "bg-cream/[0.04] border border-cream/10 text-cream/60 hover:border-brass/30 hover:text-cream"
+                ? "bg-gradient-to-r from-terracotta to-terracotta-deep text-[#F6F3EE] shadow-[0_0_20px_rgba(213,97,62,0.25)]"
+                : "bg-[#0F0F0F]/[0.04] border border-[#0F0F0F]/10 text-[#0F0F0F]/60 hover:border-[#6F655A]/30 hover:text-[#0F0F0F]"
             }`}
           >
             {f === "all" ? "All clusters" : f}
           </button>
         ))}
-        <div className="ml-auto flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-cream/40 font-mono">
+        <div className="ml-auto flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[#0F0F0F]/40 font-mono">
           <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
           {filteredClusters.length} active nodes
         </div>
@@ -117,7 +117,7 @@ export default function ClustersPage() {
       {/* MAP + LIST */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         {/* MAP */}
-        <div className="lg:col-span-2 bg-ink rounded-2xl sm:rounded-3xl overflow-hidden h-[400px] sm:h-[500px] lg:h-[600px] relative border border-cream/8">
+        <div className="lg:col-span-2 bg-[#FBF9F5] rounded-2xl sm:rounded-3xl overflow-hidden h-[400px] sm:h-[500px] lg:h-[600px] relative border border-[#0F0F0F]/8">
           {/* Top accent */}
           <div
             className="absolute top-0 left-0 right-0 h-px z-10"
@@ -130,7 +130,7 @@ export default function ClustersPage() {
           {loading ? (
             <div className="flex flex-col items-center justify-center h-full">
               <div className="w-12 h-12 rounded-full border-2 border-terracotta/30 border-t-terracotta animate-spin mb-4" />
-              <div className="text-cream/50 text-sm font-mono">Loading cluster graph...</div>
+              <div className="text-[#0F0F0F]/50 text-sm font-mono">Loading cluster graph...</div>
             </div>
           ) : (
             <MapContainer
@@ -176,34 +176,34 @@ export default function ClustersPage() {
           )}
 
           {/* Legend overlay */}
-          <div className="absolute bottom-4 left-4 bg-ink-deep/90 backdrop-blur-xl rounded-2xl p-4 border border-cream/10 z-10">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-brass mb-3 font-medium">
+          <div className="absolute bottom-4 left-4 bg-[#EDE8DE]/90 backdrop-blur-xl rounded-2xl p-4 border border-[#0F0F0F]/10 z-10">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-[#6F655A] mb-3 font-medium">
               Legend
             </div>
-            <div className="space-y-2 text-xs text-cream">
+            <div className="space-y-2 text-xs text-[#0F0F0F]">
               <div className="flex items-center gap-2.5">
                 <span className="w-3 h-3 rounded-full bg-terracotta shadow-[0_0_8px_rgba(213,97,62,0.6)]" />
                 <span>Diaspora cluster</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <span className="w-3 h-3 rounded-full bg-brass shadow-[0_0_8px_rgba(184,149,106,0.5)]" />
+                <span className="w-3 h-3 rounded-full bg-[#6F655A] shadow-[0_0_8px_rgba(184,149,106,0.5)]" />
                 <span>Local Bangladesh</span>
               </div>
             </div>
           </div>
 
           {/* Compass overlay */}
-          <div className="absolute top-4 right-4 bg-ink-deep/90 backdrop-blur-xl rounded-xl px-3 py-2 border border-cream/10 z-10 flex items-center gap-2">
-            <MapPin className="w-3 h-3 text-brass" />
-            <span className="text-[10px] uppercase tracking-[0.18em] text-cream/60 font-mono">
+          <div className="absolute top-4 right-4 bg-[#EDE8DE]/90 backdrop-blur-xl rounded-xl px-3 py-2 border border-[#0F0F0F]/10 z-10 flex items-center gap-2">
+            <MapPin className="w-3 h-3 text-[#6F655A]" />
+            <span className="text-[10px] uppercase tracking-[0.18em] text-[#0F0F0F]/60 font-mono">
               Dhaka 23.81° N
             </span>
           </div>
         </div>
 
         {/* CLUSTER LIST */}
-        <div className="bg-ink rounded-2xl sm:rounded-3xl p-5 max-h-[500px] lg:max-h-[600px] overflow-y-auto border border-cream/8 relative">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-brass font-medium mb-4 px-2 sticky top-0 bg-ink z-10 pb-2 border-b border-cream/5">
+        <div className="bg-[#FBF9F5] rounded-2xl sm:rounded-3xl p-5 max-h-[500px] lg:max-h-[600px] overflow-y-auto border border-[#0F0F0F]/8 relative">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-[#6F655A] font-medium mb-4 px-2 sticky top-0 bg-[#FBF9F5] z-10 pb-2 border-b border-[#0F0F0F]/5">
             {filteredClusters.length} CLUSTERS
           </div>
           <div className="space-y-2">
@@ -219,7 +219,7 @@ export default function ClustersPage() {
                   className={`w-full text-left p-4 rounded-2xl transition-all relative overflow-hidden ${
                     isSelected
                       ? "bg-gradient-to-br from-terracotta/15 to-transparent border border-terracotta/40"
-                      : "bg-cream/[0.02] border border-cream/8 hover:border-brass/30 hover:bg-cream/[0.05]"
+                      : "bg-[#0F0F0F]/[0.02] border border-[#0F0F0F]/8 hover:border-[#6F655A]/30 hover:bg-[#0F0F0F]/[0.05]"
                   }`}
                 >
                   {isSelected && (
@@ -228,15 +228,15 @@ export default function ClustersPage() {
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="text-2xl">{FLAGS[c.country]}</div>
                     <div className={`text-[9px] uppercase tracking-[0.18em] font-medium ${
-                      isSelected ? "text-terracotta" : "text-cream/40"
+                      isSelected ? "text-terracotta" : "text-[#0F0F0F]/40"
                     }`}>
                       {c.segment_type}
                     </div>
                   </div>
-                  <div className="font-serif text-lg leading-tight text-cream">
+                  <div className="font-display font-semibold text-lg leading-tight text-[#0F0F0F]">
                     {c.city}
                   </div>
-                  <div className="text-[10px] mt-1.5 text-cream/45 font-mono">
+                  <div className="text-[10px] mt-1.5 text-[#0F0F0F]/45 font-mono">
                     {c.age_band} · {(c.estimated_size / 1000).toFixed(1)}k
                   </div>
                 </motion.button>
@@ -253,7 +253,7 @@ export default function ClustersPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-gradient-to-br from-ink-soft to-ink rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 border border-cream/8 relative overflow-hidden"
+            className="bg-gradient-to-br from-[#FBF9F5] to-[#FBF9F5] rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 border border-[#0F0F0F]/8 relative overflow-hidden"
           >
             <div
               className="absolute top-0 left-0 right-0 h-px"
@@ -281,20 +281,20 @@ export default function ClustersPage() {
                 <div className="flex items-start gap-3 sm:gap-5 min-w-0">
                   <div className="text-4xl sm:text-6xl flex-shrink-0">{FLAGS[selected.country]}</div>
                   <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-2">
+                    <div className="text-[10px] uppercase tracking-[0.2em] text-[#6F655A] mb-2">
                       CLUSTER · {selected.segment_type.toUpperCase()}
                     </div>
-                    <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.95] tracking-tight break-words">
+                    <h2 className="font-display font-semibold text-3xl sm:text-4xl lg:text-5xl leading-[0.95] tracking-tight break-words">
                       {selected.city}
                     </h2>
-                    <div className="text-sm text-cream/50 mt-2 font-mono">
+                    <div className="text-sm text-[#0F0F0F]/50 mt-2 font-mono">
                       {selected.country} · {selected.age_band}
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelected(null)}
-                  className="text-cream/40 hover:text-cream w-10 h-10 rounded-full border border-cream/10 hover:border-terracotta/40 flex items-center justify-center transition-all"
+                  className="text-[#0F0F0F]/40 hover:text-[#0F0F0F] w-10 h-10 rounded-full border border-[#0F0F0F]/10 hover:border-terracotta/40 flex items-center justify-center transition-all"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -308,7 +308,7 @@ export default function ClustersPage() {
                   value={
                     <>
                       {(selected.estimated_size / 1000).toFixed(1)}
-                      <span className="text-base text-cream/40">k</span>
+                      <span className="text-base text-[#0F0F0F]/40">k</span>
                     </>
                   }
                 />
@@ -327,7 +327,7 @@ export default function ClustersPage() {
                   value={
                     <>
                       {(selected.typical_engagement_rate * 100).toFixed(1)}
-                      <span className="text-base text-cream/40">%</span>
+                      <span className="text-base text-[#0F0F0F]/40">%</span>
                     </>
                   }
                 />
@@ -370,18 +370,18 @@ export default function ClustersPage() {
                         .sort(([, a]: any, [, b]: any) => b - a)
                         .map(([channel, weight]) => (
                           <div key={channel} className="flex items-center gap-3 text-xs">
-                            <div className="w-24 capitalize text-cream/65 font-medium">
+                            <div className="w-24 capitalize text-[#0F0F0F]/65 font-medium">
                               {channel}
                             </div>
-                            <div className="flex-1 bg-cream/5 rounded-full h-1.5 overflow-hidden">
+                            <div className="flex-1 bg-[#0F0F0F]/5 rounded-full h-1.5 overflow-hidden">
                               <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${(weight as number) * 100}%` }}
                                 transition={{ duration: 0.8, ease: "easeOut" }}
-                                className="bg-gradient-to-r from-brass to-terracotta h-full"
+                                className="bg-gradient-to-r from-[#6F655A] to-terracotta h-full"
                               />
                             </div>
-                            <div className="text-cream/50 text-[10px] w-10 text-right font-mono">
+                            <div className="text-[#0F0F0F]/50 text-[10px] w-10 text-right font-mono">
                               {((weight as number) * 100).toFixed(0)}%
                             </div>
                           </div>
@@ -393,25 +393,25 @@ export default function ClustersPage() {
                 {/* Right column — Language, Aesthetic, Gift, Cultural */}
                 <div className="space-y-6">
                   <DetailSection title="Language mix">
-                    <div className="text-sm text-cream/80 leading-relaxed">
+                    <div className="text-sm text-[#0F0F0F]/80 leading-relaxed">
                       {selected.language_mix}
                     </div>
                   </DetailSection>
 
                   <DetailSection title="Aesthetic">
-                    <div className="text-sm text-cream/80 leading-relaxed">
+                    <div className="text-sm text-[#0F0F0F]/80 leading-relaxed">
                       {selected.aesthetic_preference}
                     </div>
                   </DetailSection>
 
                   <DetailSection title="Gift-giving pattern">
-                    <div className="text-sm text-cream/80 leading-relaxed">
+                    <div className="text-sm text-[#0F0F0F]/80 leading-relaxed">
                       {selected.gift_giving_pattern}
                     </div>
                   </DetailSection>
 
                   <DetailSection title="Cultural notes">
-                    <div className="text-xs text-cream/55 leading-relaxed italic">
+                    <div className="text-xs text-[#0F0F0F]/55 leading-relaxed italic">
                       {selected.cultural_notes}
                     </div>
                   </DetailSection>
@@ -419,10 +419,10 @@ export default function ClustersPage() {
               </div>
 
               {/* Footer — Confidence */}
-              <div className="mt-8 pt-6 border-t border-cream/8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-cream/40 font-mono">
+              <div className="mt-8 pt-6 border-t border-[#0F0F0F]/8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-[#0F0F0F]/40 font-mono">
                 <div className="flex items-center gap-2">
                   <span>Confidence</span>
-                  <span className="text-brass">{(selected.confidence_score * 100).toFixed(0)}%</span>
+                  <span className="text-[#6F655A]">{(selected.confidence_score * 100).toFixed(0)}%</span>
                 </div>
                 <div>
                   Source: {selected.data_sources?.join(" · ") || "curated"}
@@ -442,20 +442,20 @@ export default function ClustersPage() {
 function StatCard({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (
     <div
-      className={`rounded-2xl p-5 border transition-all hover:border-brass/30 ${
+      className={`rounded-2xl p-5 border transition-all hover:border-[#6F655A]/30 ${
         accent
           ? "bg-gradient-to-br from-terracotta/10 to-transparent border-terracotta/25"
-          : "bg-ink border-cream/8"
+          : "bg-[#FBF9F5] border-[#0F0F0F]/8"
       }`}
     >
       <div
         className={`text-[10px] uppercase tracking-[0.18em] mb-2 ${
-          accent ? "text-terracotta" : "text-cream/45"
+          accent ? "text-terracotta" : "text-[#0F0F0F]/45"
         }`}
       >
         {label}
       </div>
-      <div className="font-serif text-4xl text-cream leading-none">{value}</div>
+      <div className="font-display font-semibold text-4xl text-[#0F0F0F] leading-none">{value}</div>
     </div>
   );
 }
@@ -470,12 +470,12 @@ function DetailStat({
   value: React.ReactNode;
 }) {
   return (
-    <div className="bg-ink-deep border border-cream/8 rounded-2xl p-4">
-      <Icon className="w-3.5 h-3.5 text-brass mb-2.5" strokeWidth={1.75} />
-      <div className="text-[9px] uppercase tracking-[0.18em] text-cream/45 mb-1.5">
+    <div className="bg-[#EDE8DE] border border-[#0F0F0F]/8 rounded-2xl p-4">
+      <Icon className="w-3.5 h-3.5 text-[#6F655A] mb-2.5" strokeWidth={1.75} />
+      <div className="text-[9px] uppercase tracking-[0.18em] text-[#0F0F0F]/45 mb-1.5">
         {label}
       </div>
-      <div className="font-serif text-2xl text-cream leading-tight">
+      <div className="font-display font-semibold text-2xl text-[#0F0F0F] leading-tight">
         {value}
       </div>
     </div>
@@ -485,7 +485,7 @@ function DetailStat({
 function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-4">
-      <div className="text-[10px] uppercase tracking-[0.18em] text-brass mb-2.5 font-medium">
+      <div className="text-[10px] uppercase tracking-[0.18em] text-[#6F655A] mb-2.5 font-medium">
         {title}
       </div>
       {children}

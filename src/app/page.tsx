@@ -1,474 +1,1110 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import {
-  ArrowDown,
-  Sparkles,
-  Wand2,
-  Globe,
-  FileText,
-} from "lucide-react";
-import { MagneticButton } from "@/components/MagneticButton";
-import { NumberCounter } from "@/components/NumberCounter";
-import { GradientOrbs } from "@/components/GradientOrbs";
+  motion,
+  useScroll,
+  useTransform,
+  useMotionValue,
+  useSpring,
+  useMotionValueEvent,
+  useReducedMotion,
+  type MotionValue,
+} from "framer-motion";
+import { Check } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useLenis } from "@/lib/hooks";
+import { T, Reveal, Tag, Button, Tilt } from "@/components/system";
 import {
-  useLenis,
-  useGsap,
-  useRevealUp,
-  useParallax,
-  useTextReveal,
-} from "@/lib/hooks";
+  EASE,
+  Preloader,
+  MaskedWords,
+  VelocityMarquee,
+  CursorDot,
+  ScrollProgress,
+  GlowOrbs,
+  ImageTrail,
+  WordScrub,
+} from "@/components/cinema";
 
+gsap.registerPlugin(ScrollTrigger);
+
+const SHELL = "mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-16";
+
+/* =========================================================================
+   PAGE — cinematic cut: preloader → hero → marquee → assembly (pinned)
+   → editorial showcase → pricing → word-scrub CTA → footer wordmark.
+   ========================================================================= */
 export default function Home() {
   useLenis();
-  useGsap();
-
-  const heroRef = useTextReveal(0.2);
-  const heroSubRef = useRevealUp(false, 1.2);
-  const heroCtaRef = useRevealUp(false, 1.5);
-  const banglaParallax = useParallax(0.5);
-
-  const problemSectionRef = useRevealUp(true);
-
-  const marqueeRef = useRevealUp();
-  const statsRef = useRevealUp(true);
-  const banglaRef = useRevealUp(false, 0.2);
-  const featuresHeaderRef = useRevealUp();
-  const featuresGridRef = useRevealUp(true);
-  const stackRef = useRevealUp(true);
-  const ctaRef = useRevealUp();
-  const pricingRef = useRevealUp(true);
+  const [ready, setReady] = useState(false);
 
   return (
-    <main className="grain bg-void text-cream relative overflow-x-hidden">
-      {/* NAV */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 md:px-10 py-5 backdrop-blur-xl bg-void/30 border-b border-cream/5">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <span className="font-serif italic text-2xl tracking-tight">
-              Deshly<span className="text-terracotta">.</span>
-            </span>
-          </Link>
+    <main className="brandos bo-grain relative min-h-screen overflow-x-hidden antialiased">
+      {!ready && <Preloader onComplete={() => setReady(true)} />}
+      <CursorDot />
+      <ScrollProgress />
+      <GridOverlay />
 
-          <div className="hidden md:flex items-center gap-8 text-sm">
-            <Link href="/brand-dna" className="text-cream/60 hover:text-cream transition-colors">Brand DNA</Link>
-            <Link href="/generator" className="text-cream/60 hover:text-cream transition-colors">Generator</Link>
-            <Link href="/clusters" className="text-cream/60 hover:text-cream transition-colors">Clusters</Link>
-            <a href="#pricing" className="text-cream/60 hover:text-cream transition-colors">Pricing</a>
-            <Link href="/docs" className="text-cream/60 hover:text-cream transition-colors">Docs</Link>
-          </div>
+      <InkDip />
 
-          <MagneticButton href="/brand-dna" size="sm">Get Started</MagneticButton>
+      <div className="relative z-10">
+        <Nav />
+        <Hero ready={ready} />
+        <div id="band1" className="bo-hero-ink">
+          <MarqueeBand
+            dark
+            words={["Audience", "Angle", "Campaign", "Deshly"]}
+            className="border-y border-[#F5EFE3]/12 py-6 md:py-8"
+          />
         </div>
-      </nav>
+        <Assembly />
+        <Showcase />
+        <Pricing />
+        <MarqueeBand
+          words={["Generate", "Publish", "Grow", "Repeat"]}
+          baseVelocity={-2.2}
+          className="border-y bo-rule py-6 md:py-8"
+        />
+        <FinalCTA />
+        <Footer />
+      </div>
+    </main>
+  );
+}
 
-      {/* HERO */}
-      <section className="relative min-h-[100vh] flex items-center justify-center px-6 md:px-10 pt-32 pb-20">
-        <GradientOrbs intensity="medium" />
+/* =========================================================================
+   INK DIP — one long dark act. The page opens on ink and stays there
+   through the hero, the marquee, and the assembly. On desktop the
+   assembly's own pinned timeline floods the light back in as the campaign
+   locks (see Assembly); on mobile (no pin) a simple scrub handles it here.
+   ========================================================================= */
+function InkDip() {
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const mainEl = document.querySelector("main.brandos");
+    if (!mainEl) return;
 
-        <div className="relative max-w-[1400px] mx-auto w-full">
-          <div className="flex items-center gap-3 mb-8 text-[10px] uppercase tracking-[0.25em] text-brass">
-            <span className="w-8 h-px bg-brass" />
-            <span>The Multimodal Content Engine · v1</span>
-          </div>
+    const mm = gsap.matchMedia();
+    const ctx = gsap.context(() => {
+      /* the page opens dark — the preloader covers this being applied */
+      gsap.set(mainEl, { backgroundColor: "#0F0F0F" });
 
-          {/* H1 - Changed mb-6 to mb-0 */}
-<h1 ref={heroRef} className="font-serif text-[clamp(3rem,9vw,9rem)] leading-[0.95] tracking-[-0.02em] mb-0">
-  <div className="overflow-hidden">
-    <span data-word className="inline-block mr-4">Grow Beyond</span>
-    <span data-word className="inline-block mr-4 italic text-terracotta">Borders</span>
-  </div>
-  <div className="overflow-hidden">
-    <span data-word className="inline-block mr-4">with</span>
-    <span data-word className="inline-block">Confidence.</span>
-  </div>
-</h1>
+      mm.add("(max-width: 1023px)", () => {
+        gsap.fromTo(
+          mainEl,
+          { backgroundColor: "#0F0F0F" },
+          {
+            backgroundColor: "#F6F3EE",
+            ease: "none",
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: "#example",
+              start: "top 95%",
+              end: "top 55%",
+              scrub: true,
+            },
+          },
+        );
+      });
+    });
+    return () => {
+      mm.revert();
+      ctx.revert();
+    };
+  }, []);
+  return null;
+}
 
-{/* Content Grid - Changed mt-1 to mt-4 and items-end to items-start */}
-<div className="grid grid-cols-12 gap-6 mt-4 items-start">
-  <div ref={heroSubRef} className="col-span-12 md:col-span-7">
-    <p className="text-lg md:text-xl text-cream/65 leading-relaxed max-w-2xl">
-    Deshly helps Bangladeshi fashion and lifestyle brands create marketing that feels right for Bangladeshis living in different parts of the world.
-    </p>
-
-    <div ref={heroCtaRef} className="mt-10 flex flex-wrap gap-4 items-center">
-      <MagneticButton href="/brand-dna" size="lg" variant="primary">Capture Your Brand DNA</MagneticButton>
-      <MagneticButton href="/docs" size="lg" variant="ghost" showArrow={false}>Read the Docs</MagneticButton>
-    </div>
-  </div>
-
-  {/* This empty div was also taking up space in the grid */}
-  <div className="hidden md:block col-span-12 md:col-span-5 relative h-0"></div>
-</div>
-
-          <div className="absolute bottom-0 left-1/2 -translate-x-0 flex flex-col items-center gap-2 text-cream/30 text-[16px] uppercase tracking-[0.2em]">
-            <span>Scroll</span>
-            <ArrowDown className="w-4 h-4 animate-bounce" />
-          </div>
-        </div>
-      </section>
-
-      {/* MARQUEE */}
-      <section ref={marqueeRef} className="py-12 border-y border-cream/5 bg-ink-deep overflow-hidden">
-        <div className="flex whitespace-nowrap marquee-track">
-          {[...Array(2)].map((_, idx) => (
-            <div key={idx} className="flex items-center gap-12 px-6">
-              {[
-                { city: "London", currency: "GBP" },
-                { city: "Toronto", currency: "CAD" },
-                { city: "New York", currency: "USD" },
-                { city: "Dubai", currency: "AED" },
-                { city: "Sydney", currency: "AUD" },
-                { city: "Kuala Lumpur", currency: "MYR" },
-                { city: "Doha", currency: "QAR" },
-                { city: "Riyadh", currency: "SAR" },
-                { city: "Dhaka", currency: "BDT" },
-              ].map((item, i) => (
-                <div key={`${idx}-${i}`} className="flex items-center gap-12">
-                  <div className="flex items-baseline gap-3">
-                    <span className="font-serif italic text-3xl md:text-5xl text-cream/85">{item.city}</span>
-                    <span className="font-mono text-xs text-brass">{item.currency}</span>
-                  </div>
-                  <span className="text-brass/40 text-2xl">✦</span>
-                </div>
-              ))}
-            </div>
+/* =========================================================================
+   STATIC GRID OVERLAY
+   ========================================================================= */
+function GridOverlay() {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 hidden lg:block opacity-60">
+      <div className="mx-auto h-full max-w-[1440px] px-16">
+        <div className="grid h-full grid-cols-12 border-r bo-rule">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="border-l bo-rule" />
           ))}
         </div>
-      </section>
-
-      {/* STATS */}
-      <section className="py-32 px-6 md:px-10 relative">
-        <GradientOrbs intensity="subtle" />
-        <div ref={statsRef} className="relative max-w-[1400px] mx-auto">
-          <div className="flex items-center gap-3 mb-12 text-[10px] uppercase tracking-[0.25em] text-brass" data-reveal-child>
-            <span className="w-8 h-px bg-brass" />
-            <span>The Numbers</span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-6">
-            {[
-              { value: 13, suffix: "", label: "Consumer clusters mapped" },
-              { value: 8, suffix: "", label: "Countries with active intelligence" },
-              { value: 90, suffix: "k+", label: "Diaspora reach indexed" },
-              { value: 4, suffix: "", label: "LLM providers in failover chain" },
-            ].map((stat, i) => (
-              <div key={i} data-reveal-child className="border-l border-cream/10 pl-6 md:pl-8">
-                <div className="font-serif text-[clamp(3rem,6vw,5.5rem)] leading-none tracking-tight text-cream mb-3">
-                  <NumberCounter value={stat.value} suffix={stat.suffix} />
-                </div>
-                <div className="text-xs md:text-sm text-cream/55 leading-relaxed">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PROBLEM — vertical reveal stack */}
-      <section ref={problemSectionRef} className="relative py-32 md:py-48 px-6 md:px-10 overflow-hidden">
-        <GradientOrbs intensity="subtle" />
-
-        <div className="relative max-w-[1400px] mx-auto">
-          <div data-reveal-child className="flex items-center gap-3 mb-20 text-[10px] uppercase tracking-[0.25em] text-brass">
-            <span className="w-8 h-px bg-brass" />
-            <span>The Problem</span>
-          </div>
-
-          <div className="space-y-10 md:space-y-16">
-            <h2 data-reveal-child className="font-serif text-[clamp(2rem,6vw,6rem)] leading-[0] tracking-tight text-cream">
-              One <span className="italic">brand.</span>
-            </h2>
-
-            <h2 data-reveal-child className="font-serif text-[clamp(2rem,6vw,6rem)] leading-[0.5] tracking-tight text-cream/40 pl-0 md:pl-12">
-              Different cities. <span className="italic text-brass">Different cultures.</span>
-            </h2>
-
-            <h2 data-reveal-child className="font-serif text-[clamp(2rem,6vw,6rem)] leading-[0.2] tracking-tight text-cream/40 pl-0 md:pl-24">
-              Your marketing should speak to <span className="italic text-terracotta">all of them.</span>
-            </h2>
-
-            <div data-reveal-child className="pt-12 md:pt-20 border-t border-cream/10 pl-0 md:pl-36 max-w-3xl">
-              <h3 className="font-serif text-[clamp(2rem,5vw,4rem)] leading-[1] tracking-tight text-cream mb-6">
-                Manually <span className="italic text-terracotta">impossible.</span>
-              </h3>
-              <p className="text-lg md:text-xl text-cream/55 leading-relaxed">
-                Bangladeshi D2C brands serve a global diaspora — but write campaigns for one. Deshly closes that gap with a multi-LLM, culture-aware engine.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-{/* BANGLA CALLIGRAPHY MOMENT */}
-<section className="relative py-24 md:py-32 overflow-hidden border-y border-cream/5">
-  <GradientOrbs intensity="intense" />
-
-  <div ref={banglaParallax} className="relative">
-    <div ref={banglaRef} className="text-center px-6 flex flex-col items-center">
-      <div className="text-[10px] uppercase tracking-[0.25em] text-brass mb-4">✦ The Name ✦</div>
-      
-      <div className="relative">
-        <Image
-          src="/assets/deshly-bangla.png"
-          alt="বেশলি — Deshly"
-          width={800} // Reduced from 1200
-          height={500} // Reduced from 800
-          priority
-          /* Updated clamp values: Min 250px, Preferred 50vw, Max 700px */
-          className="w-[clamp(250px,50vw,700px)] h-auto select-none drop-shadow-[0_0_60px_rgba(213,97,62,0.15)]"
-        />
-      </div>
-
-      {/* Adjusting the margin-top of the text below since the image is smaller */}
-      <div className="-mt-8 md:-mt-0 max-w-xl mx-auto relative z-10">
-        <p className="text-cream/55 text-base md:text-lg leading-snug tracking-tight">
-          <span className="italic font-serif text-brass">Deshly</span> — from <span className="italic">desh</span>, the Bangla word for homeland. A platform for brands whose roots are here, whose customers are everywhere.
-        </p>
       </div>
     </div>
-  </div>
-</section>
+  );
+}
 
-      {/* FEATURES */}
-      <section className="py-32 px-6 md:px-10 relative">
-        <GradientOrbs intensity="subtle" />
-        <div className="relative max-w-[1400px] mx-auto">
-          <div ref={featuresHeaderRef} className="mb-20 max-w-3xl">
-            <div className="flex items-center gap-3 mb-6 text-[10px] uppercase tracking-[0.25em] text-brass">
-              <span className="w-8 h-px bg-brass" />
-              <span>The Product</span>
-            </div>
-            <h2 className="font-serif text-[clamp(2.5rem,6vw,5.5rem)] leading-[1] tracking-tight mb-6">
-              Three <span className="italic text-terracotta">surfaces.</span>
-              <br />One brain.
-            </h2>
-            <p className="text-lg text-cream/55 leading-relaxed max-w-xl">
-            Everything inside Deshly is designed to help small brands create better campaigns faster — without needing marketing experience.
-            </p>
+/* =========================================================================
+   NAV — hides on scroll down, returns on scroll up. Blur once moving.
+   ========================================================================= */
+function Nav() {
+  const { scrollY } = useScroll();
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+
+  useMotionValueEvent(scrollY, "change", (v) => {
+    const prev = scrollY.getPrevious() ?? 0;
+    setScrolled(v > 24);
+    setHidden(v > prev && v > 180);
+  });
+
+  return (
+    <motion.nav
+      initial={false}
+      animate={{ y: hidden ? "-110%" : "0%" }}
+      transition={{ duration: 0.55, ease: EASE }}
+      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-500 ${
+        scrolled
+          ? "bg-[#F6F3EE]/80 backdrop-blur-xl border-b bo-rule"
+          : "border-b border-transparent"
+      }`}
+    >
+      {/* over the dark hero (unscrolled) the nav reads cream; on the frosted
+          paper bar it returns to ink */}
+      <div className={`${SHELL} h-[68px] flex items-center justify-between`}>
+        <Link
+          href="/"
+          className={`font-display text-xl font-semibold tracking-[-0.03em] transition-colors duration-500 ${
+            scrolled ? "text-[#0F0F0F]" : "text-[#F5EFE3]"
+          }`}
+        >
+          Deshly<span className="text-[#D5613E]">.</span>
+        </Link>
+
+        <div
+          className={`hidden md:flex items-center gap-8 ${T.monoLabel} transition-colors duration-500 ${
+            scrolled ? "text-[#0F0F0F]/60" : "text-[#F5EFE3]/60"
+          }`}
+        >
+          <a href="#how" className={`transition-colors ${scrolled ? "hover:text-[#0F0F0F]" : "hover:text-[#F5EFE3]"}`}>How it works</a>
+          <a href="#example" className={`transition-colors ${scrolled ? "hover:text-[#0F0F0F]" : "hover:text-[#F5EFE3]"}`}>Showcase</a>
+          <a href="#pricing" className={`transition-colors ${scrolled ? "hover:text-[#0F0F0F]" : "hover:text-[#F5EFE3]"}`}>Pricing</a>
+          <Link href="/docs" className={`transition-colors ${scrolled ? "hover:text-[#0F0F0F]" : "hover:text-[#F5EFE3]"}`}>Docs</Link>
+        </div>
+
+        <Button
+          href="/brand-dna"
+          arrow={false}
+          className={`!px-5 !py-2.5 transition-colors duration-500 ${
+            scrolled ? "" : "!bg-[#F5EFE3] !text-[#0F0F0F] hover:!bg-[#D5613E] hover:!text-[#F6F3EE]"
+          }`}
+        >
+          Get Access
+        </Button>
+      </div>
+    </motion.nav>
+  );
+}
+
+/* =========================================================================
+   §01 — HERO : masked-line headline gated on the preloader, typewriter
+   placeholder, content parallaxes away as you leave.
+   ========================================================================= */
+const IDEAS = [
+  "Monsoon kurta for Eid",
+  "Vitamin-C glow serum",
+  "Retro runner sneakers",
+  "Handloom saree drop",
+];
+
+function useTypewriter(phrases: string[]) {
+  const [text, setText] = useState("");
+  useEffect(() => {
+    let phrase = 0;
+    let char = 0;
+    let deleting = false;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const step = () => {
+      const full = phrases[phrase];
+      if (!deleting) {
+        char++;
+        setText(full.slice(0, char));
+        if (char === full.length) {
+          deleting = true;
+          timer = setTimeout(step, 1700);
+          return;
+        }
+        timer = setTimeout(step, 55);
+      } else {
+        char--;
+        setText(full.slice(0, char));
+        if (char === 0) {
+          deleting = false;
+          phrase = (phrase + 1) % phrases.length;
+        }
+        timer = setTimeout(step, 26);
+      }
+    };
+    timer = setTimeout(step, 900);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return text;
+}
+
+/* floating product card — mouse parallax (depth) + idle drift */
+function FloatCard({
+  mx,
+  my,
+  depth,
+  pos,
+  rot,
+  float,
+  ready,
+  delay,
+  children,
+}: {
+  mx: MotionValue<number>;
+  my: MotionValue<number>;
+  depth: number;
+  pos: string;
+  rot: string;
+  float: string;
+  ready: boolean;
+  delay: number;
+  children: React.ReactNode;
+}) {
+  const x = useTransform(mx, (v) => v * depth);
+  const y = useTransform(my, (v) => v * depth * 0.75);
+  return (
+    <motion.div
+      aria-hidden
+      style={{ x, y }}
+      initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
+      animate={
+        ready
+          ? { opacity: 1, scale: 1, filter: "blur(0px)" }
+          : { opacity: 0, scale: 0.8, filter: "blur(10px)" }
+      }
+      transition={{ duration: 1, ease: EASE, delay }}
+      className={`pointer-events-none absolute hidden md:block ${pos}`}
+    >
+      <div className={rot}>
+        <div className={float}>{children}</div>
+      </div>
+    </motion.div>
+  );
+}
+
+function Hero({ ready }: { ready: boolean }) {
+  const [product, setProduct] = useState("");
+  const placeholder = useTypewriter(IDEAS);
+  const reduce = useReducedMotion();
+
+  const { scrollY } = useScroll();
+  const away = useTransform(scrollY, [0, 700], [0, 110]);
+  const opacity = useTransform(scrollY, [0, 600], [1, 0.15]);
+
+  /* mouse parallax — normalized -0.5..0.5, spring-smoothed */
+  const mxRaw = useMotionValue(0);
+  const myRaw = useMotionValue(0);
+  const mx = useSpring(mxRaw, { stiffness: 60, damping: 20, mass: 0.6 });
+  const my = useSpring(myRaw, { stiffness: 60, damping: 20, mass: 0.6 });
+  const onMouse = (e: React.MouseEvent) => {
+    if (reduce) return;
+    mxRaw.set(e.clientX / window.innerWidth - 0.5);
+    myRaw.set(e.clientY / window.innerHeight - 0.5);
+  };
+
+  const fade = (delay: number) => ({
+    initial: { opacity: 0, y: 16 },
+    animate: ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 },
+    transition: { duration: 0.7, ease: EASE, delay },
+  });
+
+  const imgCard =
+    "overflow-hidden rounded-2xl border border-[#F5EFE3]/12 bg-[#181614] shadow-[0_30px_70px_-20px_rgba(0,0,0,0.75)]";
+
+  return (
+    <header
+      onMouseMove={onMouse}
+      className="bo-hero-ink relative min-h-screen flex flex-col justify-center overflow-hidden text-[#F5EFE3]"
+    >
+      {/* animated background — brand glow orbs */}
+      <GlowOrbs />
+
+      {/* floating product cards — drift with the mouse at different depths */}
+      <FloatCard mx={mx} my={my} depth={-34} ready={ready} delay={0.9}
+        pos="left-[5%] top-[20%]" rot="-rotate-6" float="bo-float">
+        <div className={`${imgCard} w-40 lg:w-48 aspect-[4/5]`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/sneakers.png" alt="" className="h-full w-full object-cover" />
+        </div>
+      </FloatCard>
+
+      <FloatCard mx={mx} my={my} depth={52} ready={ready} delay={1.05}
+        pos="right-[6%] top-[16%]" rot="rotate-[5deg]" float="bo-float-slow">
+        <div className={`${imgCard} w-36 lg:w-44 aspect-[4/5]`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/skincare.jpg" alt="" className="h-full w-full object-cover" />
+        </div>
+      </FloatCard>
+
+      <FloatCard mx={mx} my={my} depth={64} ready={ready} delay={1.2}
+        pos="left-[9%] bottom-[16%]" rot="rotate-[4deg]" float="bo-float-slower">
+        <div className={`${imgCard} w-32 lg:w-40 aspect-[4/5]`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/sunglass.jpg" alt="" className="h-full w-full object-cover" />
+        </div>
+      </FloatCard>
+
+      <FloatCard mx={mx} my={my} depth={-46} ready={ready} delay={1.35}
+        pos="right-[8%] bottom-[22%]" rot="-rotate-3" float="bo-float">
+        <div className="rounded-2xl border border-[#F5EFE3]/12 bg-[#181614] px-5 py-4 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.75)]">
+          <span className={`${T.monoLabel} text-[#F5EFE3]/50 flex items-center gap-2 mb-1.5`}>
+            Matched audience
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E8835C] bo-pulse" />
+          </span>
+          <span className="font-display text-lg font-medium tracking-[-0.01em]">
+            Urban Style Buyers
+          </span>
+        </div>
+      </FloatCard>
+
+      {/* centered monolith */}
+      <motion.div
+        style={{ y: away, opacity }}
+        className={`${SHELL} relative z-10 pt-24 pb-16 text-center`}
+      >
+        <motion.div {...fade(0.1)} className="flex justify-center">
+          <span className={`inline-flex items-center gap-3 ${T.monoLabel} text-[#F5EFE3]/55`}>
+            <span>The AI Campaign Copilot</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D5613E] bo-pulse" />
+          </span>
+        </motion.div>
+
+        <h1 className="mt-8 font-display font-semibold tracking-[-0.03em] leading-[0.96] text-[clamp(2.9rem,7.5vw,6.5rem)] mx-auto max-w-5xl">
+          <MaskedWords
+            play={ready}
+            delay={0.2}
+            accentClassName="text-[#E8835C]"
+            lines={[
+              [{ t: "Find the right audience." }],
+              [{ t: "Generate the" }, { t: "campaign.", accent: true }],
+            ]}
+          />
+        </h1>
+
+        <motion.p
+          {...fade(0.75)}
+          className="mx-auto max-w-2xl mt-7 tracking-[-0.01em] leading-[1.3] text-[clamp(1.18rem,1.8vw,1.4rem)] text-[#F5EFE3]/60"
+        >
+          Tell Deshly what you&apos;re marketing. It recommends who to target,
+          what angle to use, and what to publish.
+        </motion.p>
+
+        <motion.div {...fade(0.9)} className="mt-10 mx-auto max-w-xl text-left">
+          <label
+            htmlFor="product"
+            className={`${T.monoLabel} text-[#F5EFE3]/50 block mb-2.5 text-center`}
+          >
+            What are you marketing today?
+          </label>
+          <input
+            id="product"
+            type="text"
+            value={product}
+            onChange={(e) => setProduct(e.target.value)}
+            placeholder={placeholder || " "}
+            className={`w-full rounded-lg border border-[#F5EFE3]/15 bg-[#181614] px-5 py-4 ${T.body} !text-[#F5EFE3] placeholder:text-[#F5EFE3]/35 outline-none transition-all duration-300 focus:border-[#E8835C] focus:shadow-[0_0_44px_rgba(213,97,62,0.25)]`}
+          />
+          <div className="mt-4">
+            <Button
+              href="/brand-dna"
+              full
+              magnetic
+              arrow={false}
+              className="!bg-[#F5EFE3] !text-[#0F0F0F] hover:!bg-[#D5613E] hover:!text-[#F6F3EE]"
+            >
+              Generate campaign
+            </Button>
+          </div>
+        </motion.div>
+
+        <motion.div {...fade(1.05)} className="mt-5">
+          <span className={`${T.monoData} text-[#F5EFE3]/40`}>
+            No dashboard. No research report. Just campaign direction.
+          </span>
+        </motion.div>
+      </motion.div>
+
+      {/* scroll indicator */}
+      <motion.div
+        {...fade(1.3)}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-3"
+      >
+        <span className={`${T.monoLabel} text-[#F5EFE3]/40`}>Scroll</span>
+        <span className="relative block h-10 w-px overflow-hidden bg-[#F5EFE3]/15">
+          <span className="absolute inset-x-0 h-1/2 bg-[#D5613E] bo-scroll-line" />
+        </span>
+      </motion.div>
+    </header>
+  );
+}
+
+/* =========================================================================
+   MARQUEE BAND — giant display type, scroll-velocity reactive.
+   ========================================================================= */
+function MarqueeBand({
+  words,
+  className = "",
+  baseVelocity = 2.2,
+  dark = false,
+}: {
+  words: string[];
+  className?: string;
+  baseVelocity?: number;
+  dark?: boolean;
+}) {
+  return (
+    <VelocityMarquee baseVelocity={baseVelocity} className={className}>
+      {words.map((w, i) => (
+        <span key={w} className="flex items-center">
+          <span
+            className={`font-display font-semibold tracking-[-0.03em] leading-none text-[clamp(2.5rem,6vw,5rem)] px-6 md:px-10 ${
+              i % 2 === 1
+                ? dark
+                  ? "bo-outline-text-dark"
+                  : "bo-outline-text"
+                : dark
+                  ? "text-[#F5EFE3]"
+                  : "text-[#0F0F0F]"
+            }`}
+          >
+            {w}
+          </span>
+          <span className="text-[#D5613E] text-[clamp(1.2rem,2.5vw,2rem)]">✺</span>
+        </span>
+      ))}
+    </VelocityMarquee>
+  );
+}
+
+/* =========================================================================
+   SECTION SHELL
+   ========================================================================= */
+function Section({
+  id,
+  index,
+  label,
+  children,
+}: {
+  id?: string;
+  index: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} className="relative scroll-mt-24 border-t bo-rule">
+      <div className={`${SHELL} py-20 md:py-28 relative`}>
+        <span className="absolute top-0 left-5 sm:left-8 lg:left-16 w-6 h-px bg-[#D5613E]" />
+        <Reveal className="mb-12">
+          <Tag index={index}>{label}</Tag>
+        </Reveal>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+/* =========================================================================
+   §02 — ASSEMBLY : the pinned "exploded view". One product goes in; as you
+   scroll, the campaign package flies together piece by piece and locks.
+   Desktop = scrubbed GSAP timeline with pin. Mobile = staggered reveals.
+   ========================================================================= */
+const STEPS = ["Product", "Audience", "Campaign"];
+
+function Assembly() {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+
+    const mm = gsap.matchMedia();
+    mm.add(
+      "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
+      () => {
+        const q = gsap.utils.selector(el);
+        const mainEl = document.querySelector("main.brandos");
+        const tl = gsap.timeline({
+          defaults: { ease: "none" },
+          scrollTrigger: {
+            trigger: el,
+            start: "top top",
+            end: "+=170%",
+            scrub: 0.5,
+            pin: true,
+            anticipatePin: 1,
+            onUpdate: (self) => {
+              setStep(self.progress < 0.28 ? 0 : self.progress < 0.6 ? 1 : 2);
+            },
+          },
+        });
+
+        tl.from(q('[data-piece="image"]'), { x: -320, y: 140, rotate: -12, scale: 0.85, opacity: 0, duration: 0.3 }, 0.02)
+          .from(q('[data-piece="persona"]'), { x: 360, y: -170, rotate: 10, opacity: 0, duration: 0.28 }, 0.16)
+          .from(q('[data-piece="caption"]'), { x: 430, y: 90, rotate: -8, opacity: 0, duration: 0.28 }, 0.32)
+          .from(q('[data-piece="hashtags"]'), { y: 260, rotate: 6, opacity: 0, duration: 0.26 }, 0.48)
+          .from(q('[data-piece="whatsapp"]'), { x: 340, y: 230, rotate: 12, opacity: 0, duration: 0.26 }, 0.62)
+          .from(q('[data-piece="stamp"]'), { scale: 2.6, rotate: -26, opacity: 0, duration: 0.12, ease: "power3.in" }, 0.86);
+
+        /* the campaign locks → the light floods back in for the next act.
+           Living inside this scrubbed timeline means it can never fire early.
+           The section's cream type crossfades to ink in the same beat. */
+        if (mainEl) {
+          tl.to(mainEl, { backgroundColor: "#F6F3EE", duration: 0.1 }, 0.9);
+        }
+        tl.to(q("[data-ink-flip-strong]"), { color: "#0F0F0F", duration: 0.1 }, 0.9)
+          .to(q("[data-ink-flip]"), { color: "rgba(15,15,15,0.55)", duration: 0.1 }, 0.9)
+          .to({}, { duration: 0.04 });
+      },
+    );
+    return () => mm.revert();
+  }, []);
+
+  /* dark act — existing brand darks (ink surface, cream, terracotta glow) */
+  const card =
+    "rounded-2xl border border-[#F5EFE3]/12 bg-[#181614] shadow-[0_18px_44px_-24px_rgba(0,0,0,0.6)]";
+
+  return (
+    <section id="how" ref={wrapRef} className="bo-hero-ink relative text-[#F5EFE3]">
+      {/* dimmer orbs behind the assembly so the cards stay legible */}
+      <GlowOrbs opacity={0.55} />
+
+      <div className={`${SHELL} relative z-10 min-h-screen flex flex-col justify-center py-16 md:py-20`}>
+        <div className="flex flex-wrap items-end justify-between gap-6 mb-10 md:mb-12">
+          <div>
+            <Reveal>
+              <span
+                data-ink-flip
+                className={`inline-flex items-center gap-3 ${T.monoLabel} text-[#F5EFE3]/55`}
+              >
+                <span className="text-[#E8835C]">02</span>
+                <span className="w-8 h-px bg-[#F5EFE3]/25" />
+                <span>How it works</span>
+              </span>
+            </Reveal>
+            <Reveal delay={0.06} className="mt-6">
+              <h2 data-ink-flip-strong className={T.displayM}>
+                One input. A campaign{" "}
+                <span className="text-[#E8835C]">assembles itself.</span>
+              </h2>
+            </Reveal>
           </div>
 
-          <div ref={featuresGridRef} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              { href: "/brand-dna", step: "01", title: "Brand DNA", desc: "Paste 10 captions. Deshly extracts your voice — tone, vocabulary, language mix, cultural register — as a structured profile.", icon: Sparkles, tag: "EXTRACTION" },
-              { href: "/generator", step: "02", title: "Campaign Generator", desc: "One product description. Three full campaigns for three clusters — caption, image prompts, hashtags, predicted reach. Parallel generation in under 30 seconds.", icon: Wand2, tag: "GENERATION" },
-              { href: "/clusters", step: "03", title: "Cluster Explorer", desc: "An interactive map of 13 Bangladeshi diaspora clusters across 8 countries. Click any node to see its occasions, channels, AOV, peak times, cultural notes.", icon: Globe, tag: "INTELLIGENCE" },
-              { href: "/docs", step: "04", title: "Live Documentation", desc: "The full system audit trail — architecture, LLM stack, MCP servers, RAG techniques, database schema, real-time system status. Built in public.", icon: FileText, tag: "TRANSPARENCY" },
-            ].map((feature) => (
-              <Link key={feature.href} href={feature.href} data-reveal-child className="group relative bg-ink rounded-3xl p-8 md:p-10 border border-cream/8 hover:border-terracotta/40 transition-all duration-500 overflow-hidden">
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-                  <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 0%, rgba(213, 97, 62, 0.12), transparent 70%)" }} />
-                </div>
-
-                <div className="relative">
-                  <div className="flex items-start justify-between mb-12">
-                    <div className="flex items-center gap-4">
-                      <span className="font-mono text-xs text-brass">{feature.step}</span>
-                      <span className="text-[10px] uppercase tracking-[0.2em] text-cream/40">{feature.tag}</span>
-                    </div>
-                    <div className="w-12 h-12 rounded-full border border-cream/10 group-hover:border-terracotta/60 flex items-center justify-center transition-all duration-500 group-hover:rotate-45">
-                      <feature.icon className="w-4 h-4 text-cream/60 group-hover:text-terracotta transition-colors" strokeWidth={1.5} />
-                    </div>
-                  </div>
-
-                  <h3 className="font-serif text-3xl md:text-5xl tracking-tight leading-none mb-5">{feature.title}</h3>
-                  <p className="text-cream/55 leading-relaxed text-sm md:text-base max-w-md">{feature.desc}</p>
-
-                  <div className="mt-10 inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-brass group-hover:text-terracotta transition-colors">
-                    <span>Open Surface</span>
-                    <span className="text-base">→</span>
-                  </div>
-                </div>
-              </Link>
+          {/* step rail — driven by scroll progress on desktop */}
+          <div className="hidden lg:flex items-center gap-8">
+            {STEPS.map((s, i) => (
+              <span
+                key={s}
+                className={`flex items-center gap-2.5 ${T.monoLabel} transition-colors duration-300 ${
+                  step >= i ? "text-[#E8835C]" : "text-[#F5EFE3]/35"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                    step >= i ? "bg-[#E8835C]" : "bg-[#F5EFE3]/20"
+                  }`}
+                />
+                0{i + 1} — {s}
+              </span>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* THE STACK */}
-      <section className="py-32 px-6 md:px-10 relative border-t border-cream/5">
-        <div ref={stackRef} className="max-w-[1400px] mx-auto">
-          <div className="flex items-center gap-3 mb-12 text-[10px] uppercase tracking-[0.25em] text-brass" data-reveal-child>
-            <span className="w-8 h-px bg-brass" />
-            <span>The Stack</span>
-          </div>
+        {/* the composition — final locked layout; GSAP explodes FROM offsets */}
+        <div className="relative mx-auto w-full max-w-5xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            {/* product input card */}
+            <Reveal className="lg:col-span-4" as="div">
+              <figure data-piece="image" className={`${card} overflow-hidden m-0 h-full flex flex-col`}>
+                <div className={`flex items-center justify-between px-5 py-3.5 border-b border-[#F5EFE3]/12 ${T.monoLabel} text-[#F5EFE3]/50`}>
+                  <span>Input — Product</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E8835C] bo-pulse" />
+                </div>
+                <div className="flex-1 min-h-[280px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/assets/skincare.jpg"
+                    alt="Skincare product used as the campaign input"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className={`px-5 py-3 border-t border-[#F5EFE3]/12 ${T.monoData} text-[#F5EFE3]/40`}>
+                  hydration-serum.jpg
+                </div>
+              </figure>
+            </Reveal>
 
-          <div data-reveal-child className="mb-16 max-w-3xl">
-            <h2 className="font-serif text-[clamp(2.5rem,6vw,5rem)] leading-[1] tracking-tight mb-6">
-              Built like <span className="italic text-terracotta">infrastructure.</span>
-            </h2>
-            <p className="text-lg text-cream/55 leading-relaxed max-w-xl">
-              Multi-LLM failover. Graph RAG. MCP-exposed tools. Vector embeddings. Real ingestion pipelines. No wrappers.
-            </p>
-          </div>
+            <div className="lg:col-span-8 grid gap-5">
+              {/* matched audience */}
+              <Reveal delay={0.05}>
+                <div data-piece="persona" className={`${card} p-6`}>
+                  <div className={`${T.monoLabel} text-[#F5EFE3]/50 mb-3`}>
+                    Matched audience
+                  </div>
+                  <div className={`${T.heading} mb-4`}>
+                    Skincare Routine Shoppers
+                  </div>
+                  {/* dark meter */}
+                  <div className="flex items-center gap-3">
+                    <span className={`${T.monoData} text-[#F5EFE3]/45 w-20 shrink-0`}>Match</span>
+                    <span className="relative h-1 flex-1 rounded-full bg-[#F5EFE3]/12 overflow-hidden">
+                      <span
+                        className="absolute inset-y-0 left-0 rounded-full bg-[#E8835C]"
+                        style={{ width: "92%" }}
+                      />
+                    </span>
+                    <span className={`${T.monoData} text-[#F5EFE3]/55 w-9 text-right`}>0.92</span>
+                  </div>
+                </div>
+              </Reveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { tag: "LLMs", title: "4-provider chain", body: "Groq Llama 3.3 70B → Together AI Llama Turbo → Gemini 2.0 Flash → Ollama (local). First success wins. Single outages cannot break the system." },
-              { tag: "RAG", title: "4 retrieval techniques", body: "Naive RAG, vector search (pgvector ivfflat), hybrid FTS+vector, and Graph RAG over the cluster attribute graph for product-cluster matching." },
-              { tag: "MCP", title: "3 servers, 9 tools", body: "DiasporaGraph, BrandVoice, CampaignGenerator — all expose Deshly as MCP-callable tools any AI agent can use. Postgres / Filesystem / Playwright MCP used internally." },
-            ].map((card, i) => (
-              <div key={i} data-reveal-child className="bg-ink rounded-3xl p-8 border border-cream/8">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-6">{card.tag}</div>
-                <h3 className="font-serif text-2xl md:text-3xl tracking-tight leading-tight mb-4">{card.title}</h3>
-                <p className="text-cream/55 text-sm leading-relaxed">{card.body}</p>
+              {/* caption */}
+              <Reveal delay={0.1}>
+                <div data-piece="caption" className={`${card} p-6`}>
+                  <div className={`${T.monoLabel} text-[#F5EFE3]/50 mb-3`}>
+                    Caption
+                  </div>
+                  <p className="font-display text-xl md:text-2xl leading-snug tracking-[-0.01em]">
+                    &ldquo;Give your skin the fresh, hydrated reset it deserves
+                    every day.&rdquo;
+                  </p>
+                </div>
+              </Reveal>
+
+              <div className="grid sm:grid-cols-2 gap-5">
+                {/* hashtags */}
+                <Reveal delay={0.15}>
+                  <div data-piece="hashtags" className={`${card} p-6 h-full`}>
+                    <div className={`${T.monoLabel} text-[#F5EFE3]/50 mb-4`}>
+                      Hashtags
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {["#dailyglow", "#skincareroutine", "#hydration"].map((h) => (
+                        <span
+                          key={h}
+                          className={`${T.monoData} rounded-full border border-[#F5EFE3]/25 px-3 py-1.5 text-[#F5EFE3]/70`}
+                        >
+                          {h}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </Reveal>
+
+                {/* whatsapp copy */}
+                <Reveal delay={0.2}>
+                  <div data-piece="whatsapp" className={`${card} p-6 h-full`}>
+                    <div className={`${T.monoLabel} text-[#F5EFE3]/50 mb-4`}>
+                      WhatsApp
+                    </div>
+                    <div className="rounded-2xl rounded-tl-sm bg-[#F5EFE3]/10 px-4 py-3">
+                      <p className={`${T.bodyS} !text-[#F5EFE3]/80`}>
+                        The hydration serum is back in stock — want the link
+                        before it goes again?
+                      </p>
+                    </div>
+                  </div>
+                </Reveal>
               </div>
-            ))}
+            </div>
           </div>
 
-          <div data-reveal-child className="mt-12 text-center">
-            <MagneticButton href="/docs" variant="outline" size="md">See the full audit trail</MagneticButton>
+          {/* stamp — slams in at the end, glows on ink */}
+          <div
+            data-piece="stamp"
+            className="absolute -top-5 -right-2 md:-right-5 rotate-[7deg] rounded-lg border-2 border-[#D5613E] bg-[#0F0F0F] px-4 py-2 shadow-[0_0_36px_rgba(213,97,62,0.45)]"
+          >
+            <span className={`${T.monoLabel} text-[#E8835C]`}>
+              Ready to publish ✺
+            </span>
           </div>
         </div>
-      </section>
 
-      {/* PRICING */}
-      <section id="pricing" ref={pricingRef} className="scroll-mt-24 py-32 px-6 md:px-10 relative border-t border-cream/5">
-        <GradientOrbs intensity="subtle" />
-        <div className="relative max-w-[1400px] mx-auto">
-          <div data-reveal-child className="mb-16 max-w-3xl">
-            <div className="flex items-center gap-3 mb-6 text-[10px] uppercase tracking-[0.25em] text-brass">
-              <span className="w-8 h-px bg-brass" />
-              <span>Pricing</span>
-            </div>
-            <h2 className="font-serif text-[clamp(2.5rem,6vw,5rem)] leading-[1] tracking-tight mb-6">
-              Simple plans, <span className="italic text-terracotta">strong margins.</span>
-            </h2>
-            <p className="text-lg text-cream/55 leading-relaxed max-w-xl">
-              Freemium SaaS — start free, upgrade as you grow. Every tier runs on the same culturally-intelligent engine.
-            </p>
+        <div className="mt-8 text-center">
+          <span data-ink-flip className={`${T.monoData} text-[#F5EFE3]/35`}>
+            Illustrative example — generate your own in minutes.
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* =========================================================================
+   §03 — SHOWCASE : pinned horizontal filmstrip. The page scrolls sideways
+   through campaign frames; each image counter-drifts for depth. Vertical
+   stack on mobile / reduced motion.
+   ========================================================================= */
+const SHOWCASE = [
+  {
+    src: "/assets/sneakers.png",
+    alt: "Sneakers styled for an everyday city look",
+    persona: "Urban Style Buyers",
+    caption: "Built for city walks, coffee runs, and everything your day turns into.",
+  },
+  {
+    src: "/assets/skincare.jpg",
+    alt: "Skincare product for a daily hydration routine",
+    persona: "Skincare Routine Shoppers",
+    caption: "Give your skin the fresh, hydrated reset it deserves every day.",
+  },
+  {
+    src: "/assets/sunglass.jpg",
+    alt: "Sunglasses for a relaxed weekend lifestyle",
+    persona: "Weekend Lifestyle Shoppers",
+    caption: "For slow mornings, sunny plans, and that effortless off-duty look.",
+  },
+];
+
+function Showcase() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const track = trackRef.current;
+    if (!section || !track) return;
+
+    const mm = gsap.matchMedia();
+    mm.add(
+      "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
+      () => {
+        const amount = () => track.scrollWidth - window.innerWidth;
+        const tween = gsap.to(track, {
+          x: () => -amount(),
+          ease: "none",
+          scrollTrigger: {
+            trigger: section,
+            start: "top top",
+            end: () => "+=" + amount(),
+            scrub: 0.6,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              if (progressRef.current)
+                progressRef.current.style.transform = `scaleX(${self.progress})`;
+            },
+          },
+        });
+
+        /* depth: each image counter-drifts inside its mask as it crosses */
+        track.querySelectorAll<HTMLElement>("[data-strip-img]").forEach((img) => {
+          gsap.fromTo(
+            img,
+            { xPercent: -6, scale: 1.15 },
+            {
+              xPercent: 6,
+              scale: 1.15,
+              ease: "none",
+              scrollTrigger: {
+                trigger: img.closest("figure"),
+                containerAnimation: tween,
+                start: "left right",
+                end: "right left",
+                scrub: true,
+              },
+            },
+          );
+        });
+      },
+    );
+    return () => mm.revert();
+  }, []);
+
+  return (
+    <section id="example" ref={sectionRef} className="relative scroll-mt-24 border-t bo-rule">
+      <div className="lg:h-screen lg:overflow-hidden flex lg:items-center py-20 lg:py-0">
+        <div
+          ref={trackRef}
+          className="flex flex-col lg:flex-row items-center lg:items-center lg:w-max gap-16 lg:gap-[6vw] px-5 sm:px-8 lg:px-[7vw] w-full lg:will-change-transform"
+        >
+          {/* intro frame */}
+          <div className="w-full lg:w-[36vw] shrink-0">
+            <Reveal>
+              <Tag index="03">Campaign showcase</Tag>
+            </Reveal>
+            <Reveal delay={0.06} className="mt-6">
+              <h2 className={T.displayL}>
+                Campaigns that feel{" "}
+                <span className="text-[#D5613E]">ready to publish.</span>
+              </h2>
+            </Reveal>
+            <Reveal delay={0.12} className="mt-6 max-w-md">
+              <p className={T.body}>
+                Deshly turns product context into audience-ready creative — the
+                who, the angle, and the words, in one pass.
+              </p>
+            </Reveal>
+            <Reveal delay={0.18} className="mt-10 hidden lg:flex items-center gap-4">
+              <span className={`${T.monoLabel} text-[#0F0F0F]/40`}>Scroll</span>
+              <span className="w-10 h-px bg-[#0F0F0F]/25" />
+              <span className="text-[#D5613E]">→</span>
+            </Reveal>
           </div>
 
-          <div data-reveal-child className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-            {/* FREE */}
-            <div className="glow-card flex flex-col bg-ink rounded-3xl p-8 md:p-10 border border-cream/8">
-              <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-2">Free</div>
-              <div className="text-sm text-cream/50 mb-8">For trying it out</div>
-              <div className="font-serif text-6xl tracking-tight leading-none text-cream">$0</div>
-              <div className="font-mono text-xs text-cream/45 mt-3 mb-8">forever</div>
-              <ul className="flex flex-col gap-3 flex-1 mb-8">
-                {["5 campaigns / month", "All 13 audience clusters", "Brand DNA extraction", "Community support"].map((f) => (
-                  <li key={f} className="flex items-start gap-3 text-sm text-cream/65 leading-snug">
-                    <span className="text-terracotta">→</span>{f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/brand-dna" className="text-center text-sm font-medium py-3.5 rounded-full border border-cream/15 text-cream/80 hover:text-cream hover:border-terracotta/60 hover:shadow-[0_0_28px_rgba(213,97,62,0.20)] transition-all duration-300">
-                Start free
-              </Link>
-            </div>
+          {/* frames */}
+          {SHOWCASE.map((item, i) => (
+            <figure
+              key={item.src}
+              className="group relative m-0 w-full max-w-[440px] lg:max-w-none lg:w-[30vw] xl:w-[27vw] shrink-0"
+              data-cursor="View"
+            >
+              {/* ghost index behind the frame */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -top-14 -left-3 lg:-top-20 lg:-left-6 font-display font-semibold leading-none tracking-[-0.04em] text-[clamp(5rem,10vw,9rem)] text-[#0F0F0F]/[0.07] select-none"
+              >
+                0{i + 1}
+              </span>
 
-            {/* PRO — featured */}
-            <div className="glow-card relative flex flex-col bg-ink rounded-3xl p-8 md:p-10 border border-terracotta/60 overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 50% 0%, rgba(213, 97, 62, 0.10), transparent 65%)" }} />
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 font-mono text-[10px] uppercase tracking-[0.16em] bg-terracotta text-void px-3 py-1 rounded-b-md">
-                Most popular
+              <div className="relative overflow-hidden rounded-[28px] bg-[#EDE8DE] aspect-[3/4] shadow-[0_24px_60px_-18px_rgba(15,15,15,0.28)]">
+                <div className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-[1.04]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    data-strip-img
+                    src={item.src}
+                    alt={item.alt}
+                    loading="lazy"
+                    className="h-full w-full object-cover will-change-transform"
+                    style={{ transform: "scale(1.15)" }}
+                  />
+                </div>
+
+                {/* hover caption capsule */}
+                <div className="pointer-events-none absolute inset-x-4 bottom-4 translate-y-3 opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+                  <div className="rounded-[20px] border border-white/50 bg-[#F6F3EE]/90 px-5 py-4 shadow-[0_12px_32px_rgba(15,15,15,0.18)] backdrop-blur-md">
+                    <span className={`${T.monoLabel} text-[#D5613E] block mb-1`}>
+                      {item.persona}
+                    </span>
+                    <p className="text-[15px] leading-snug text-[#0F0F0F]">
+                      {item.caption}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="relative flex flex-col flex-1">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-2 mt-3">Pro</div>
-                <div className="text-sm text-cream/50 mb-8">For growing brands</div>
-                <div className="font-serif text-6xl tracking-tight leading-none text-cream">$29</div>
-                <div className="font-mono text-xs text-cream/45 mt-3 mb-8">per month</div>
+
+              <figcaption className="mt-4 flex items-center justify-between">
+                <span className={`${T.monoLabel} text-[#0F0F0F]/45`}>
+                  0{i + 1} — {item.persona}
+                </span>
+                <span className={`${T.monoData} text-[#0F0F0F]/30`}>
+                  0{i + 1} / 0{SHOWCASE.length}
+                </span>
+              </figcaption>
+            </figure>
+          ))}
+
+          {/* end frame — CTA */}
+          <div className="w-full lg:w-[30vw] shrink-0 text-center lg:text-left">
+            <Reveal>
+              <h3 className={T.displayM}>
+                See yours <span className="text-[#D5613E]">next.</span>
+              </h3>
+            </Reveal>
+            <Reveal delay={0.08} className="mt-8">
+              <Button href="/brand-dna" magnetic arrow={false}>
+                Generate campaign
+              </Button>
+            </Reveal>
+          </div>
+        </div>
+      </div>
+
+      {/* strip progress — desktop only */}
+      <div className="pointer-events-none absolute bottom-8 left-1/2 hidden lg:block w-44 -translate-x-1/2 h-px bg-[#0F0F0F]/15">
+        <div
+          ref={progressRef}
+          className="h-full origin-left bg-[#D5613E]"
+          style={{ transform: "scaleX(0)" }}
+        />
+      </div>
+    </section>
+  );
+}
+
+/* =========================================================================
+   §04 — PRICING : glow-card hovers, staggered entrance.
+   ========================================================================= */
+const TIERS = [
+  { name: "Free", price: "$0", unit: "forever",
+    features: ["3 campaigns / month", "Audience + campaign assets", "1 image"],
+    cta: "Generate campaign", href: "/brand-dna", featured: false },
+  { name: "Pro", price: "$29", unit: "per month",
+    features: ["100 campaigns / month", "More images + variations", "Remove watermark"],
+    cta: "Generate campaign", href: "/brand-dna", featured: true },
+  { name: "Enterprise", price: "Custom", unit: "tailored to your team",
+    features: ["Team workspace", "Multiple brands", "Dedicated support"],
+    cta: "Contact us", href: "/", featured: false },
+];
+
+function Pricing() {
+  return (
+    <Section id="pricing" index="04" label="Pricing">
+      <Reveal className="max-w-2xl mb-12">
+        <h2 className={T.displayL}>
+          Start free. Scale when it <span className="text-[#D5613E]">earns it.</span>
+        </h2>
+      </Reveal>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch [perspective:1000px]">
+        {TIERS.map((tier, i) => (
+          <Reveal key={tier.name} delay={i * 0.07} className="h-full">
+            <Tilt className="h-full">
+              <div
+                className={`glow-card relative h-full flex flex-col rounded-xl p-8 ${
+                  tier.featured
+                    ? "border-2 border-[#D5613E] bg-[#FBF9F5]"
+                    : "border bo-rule bg-[#FBF9F5]"
+                }`}
+              >
+                {tier.featured && (
+                  <span className={`absolute -top-3 left-8 ${T.monoLabel} bg-[#D5613E] text-[#F6F3EE] px-3 py-1 rounded-full`}>
+                    Most popular
+                  </span>
+                )}
+
+                <div className={`${T.monoLabel} text-[#0F0F0F]/55 mb-6`}>{tier.name}</div>
+
+                <div className={`${T.displayM} text-[#0F0F0F]`}>{tier.price}</div>
+                <div className={`${T.monoData} text-[#0F0F0F]/45 mb-8`}>{tier.unit}</div>
+
                 <ul className="flex flex-col gap-3 flex-1 mb-8">
-                  {["100 campaigns / month", "Priority generation", "Product-level matching", "All export formats", "Email support"].map((f) => (
-                    <li key={f} className="flex items-start gap-3 text-sm text-cream/70 leading-snug">
-                      <span className="text-terracotta">→</span>{f}
+                  {tier.features.map((f) => (
+                    <li key={f} className={`flex items-start gap-3 ${T.bodyS} !text-[#0F0F0F]/75`}>
+                      <Check className="w-4 h-4 mt-0.5 shrink-0 text-[#D5613E]" strokeWidth={2.2} />
+                      {f}
                     </li>
                   ))}
                 </ul>
-                <Link href="/brand-dna" className="btn-glow-pro block text-center text-sm font-semibold py-3.5 rounded-full bg-gradient-to-r from-terracotta to-terracotta/90 text-void">
-                  Start Pro
+
+                <Button
+                  href={tier.href}
+                  variant={tier.featured ? "primary" : "secondary"}
+                  arrow={false}
+                  full
+                >
+                  {tier.cta}
+                </Button>
+              </div>
+            </Tilt>
+          </Reveal>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/* =========================================================================
+   §05 — FINAL CTA : word-scrub manifesto + magnetic button.
+   ========================================================================= */
+function FinalCTA() {
+  return (
+    <Section index="05" label="Get Access">
+      {/* move the mouse: product shots trail the cursor behind the copy */}
+      <ImageTrail
+        images={["/assets/sneakers.png", "/assets/skincare.jpg", "/assets/sunglass.jpg"]}
+        className="-mx-5 sm:-mx-8 lg:-mx-16 px-5 sm:px-8 lg:px-16 py-10 md:py-16"
+      >
+        <div className="relative z-10 mx-auto max-w-4xl text-center">
+          <WordScrub
+            text="Your product already has an audience. Deshly helps you find it."
+            accent={[6, 7, 8, 9, 10]}
+            className={`${T.displayL} text-balance`}
+          />
+          <Reveal delay={0.1} className="mt-10 max-w-xl mx-auto">
+            <p className={T.subhead}>
+              Start with one product. Get the audience, angle, and campaign in
+              minutes.
+            </p>
+          </Reveal>
+          <Reveal delay={0.18} className="mt-12 flex justify-center">
+            <Button href="/brand-dna" magnetic arrow={false}>
+              Generate campaign
+            </Button>
+          </Reveal>
+        </div>
+      </ImageTrail>
+    </Section>
+  );
+}
+
+/* =========================================================================
+   FOOTER — links + giant wordmark with per-letter hover.
+   ========================================================================= */
+function Footer() {
+  return (
+    <footer className="border-t bo-rule overflow-hidden">
+      <div className={`${SHELL} pt-14`}>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+          <div className="md:col-span-5">
+            <Link href="/" className="font-display text-2xl font-semibold tracking-[-0.03em]">
+              Deshly<span className="text-[#D5613E]">.</span>
+            </Link>
+            <p className={`mt-5 max-w-sm ${T.bodyS}`}>
+              Type a product. Get the audience, angle, and campaign — ready to
+              publish.
+            </p>
+          </div>
+
+          <div className="md:col-span-3 md:col-start-7">
+            <div className={`${T.monoLabel} text-[#0F0F0F]/45 mb-4`}>Product</div>
+            <div className="space-y-2.5">
+              {[
+                ["Generate a campaign", "/brand-dna"],
+                ["Campaign Generator", "/generator"],
+                ["Documentation", "/docs"],
+              ].map(([t, h]) => (
+                <Link key={h} href={h} className={`block ${T.bodyS} hover:text-[#0F0F0F] transition-colors`}>
+                  {t}
                 </Link>
-              </div>
-            </div>
-
-            {/* ENTERPRISE */}
-            <div className="glow-card flex flex-col bg-ink rounded-3xl p-8 md:p-10 border border-cream/8">
-              <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-2">Enterprise</div>
-              <div className="text-sm text-cream/50 mb-8">For agencies &amp; scale</div>
-              <div className="font-serif text-6xl tracking-tight leading-none text-cream">$299+</div>
-              <div className="font-mono text-xs text-cream/45 mt-3 mb-8">per month</div>
-              <ul className="flex flex-col gap-3 flex-1 mb-8">
-                {["Unlimited campaigns", "Multi-account workspaces", "MCP API access", "Self-host option", "Dedicated support"].map((f) => (
-                  <li key={f} className="flex items-start gap-3 text-sm text-cream/65 leading-snug">
-                    <span className="text-terracotta">→</span>{f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/" className="text-center text-sm font-medium py-3.5 rounded-full border border-cream/15 text-cream/80 hover:text-cream hover:border-terracotta/60 hover:shadow-[0_0_28px_rgba(213,97,62,0.20)] transition-all duration-300">
-                Contact us
-              </Link>
+              ))}
             </div>
           </div>
 
-          <div data-reveal-child className="mt-10 text-center font-mono text-[11px] text-cream/40 tracking-wide">
-            All plans · 70%+ gross margin · brand-owned content only, no consumer data
-          </div>
-        </div>
-      </section>
-
-      {/* BIG CTA */}
-      <section className="relative py-40 md:py-56 overflow-hidden">
-        <GradientOrbs intensity="intense" />
-
-        <div ref={ctaRef} className="relative max-w-[1400px] mx-auto px-6 md:px-10 text-center">
-          <div className="text-[10px] uppercase tracking-[0.25em] text-brass mb-8">
-            ✦ Start with Brand DNA ✦
-          </div>
-          <h2 className="font-serif text-[clamp(3rem,9vw,9rem)] leading-[0.95] tracking-[-0.02em] mb-10 max-w-5xl mx-auto">
-            Ready to speak <span className="italic text-terracotta">every diaspora?</span>
-          </h2>
-          <p className="text-lg md:text-xl text-cream/55 max-w-2xl mx-auto mb-12 leading-relaxed">
-            Paste 10 captions. Get three campaigns. See what Deshly can do in 90 seconds.
-          </p>
-          <div className="flex flex-wrap gap-4 items-center justify-center">
-            <MagneticButton href="/brand-dna" size="lg" variant="primary">Capture Your Brand DNA</MagneticButton>
-            <MagneticButton href="/clusters" size="lg" variant="ghost" showArrow={false}>Explore the Map</MagneticButton>
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-cream/5 py-16 px-6 md:px-10">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-            <div className="md:col-span-2">
-              <Link href="/" className="font-serif italic text-3xl tracking-tight">
-                Deshly<span className="text-terracotta">.</span>
-              </Link>
-              
-              <p className="text-cream/45 text-sm max-w-md mt-6 leading-relaxed">
-                Marketing intelligence for the Bangladeshi diaspora. Built in Dhaka. Speaks every culture.
-              </p>
-            </div>
-            <div>
-              <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-4">Product</div>
-              <div className="space-y-2 text-sm">
-                <Link href="/brand-dna" className="block text-cream/60 hover:text-cream transition-colors">Brand DNA</Link>
-                <Link href="/generator" className="block text-cream/60 hover:text-cream transition-colors">Campaign Generator</Link>
-                <Link href="/clusters" className="block text-cream/60 hover:text-cream transition-colors">Cluster Explorer</Link>
-                <Link href="/docs" className="block text-cream/60 hover:text-cream transition-colors">Documentation</Link>
-              </div>
-            </div>
-            <div>
-              <div className="text-[10px] uppercase tracking-[0.2em] text-brass mb-4">BuildFest 2026</div>
-              <div className="space-y-2 text-sm text-cream/45 leading-relaxed">
-                <div>Team Vengeance</div>
-                <div>The Infinity AI BuildFest</div>
-                <div>BRAC University · June 12</div>
-                <div>Track: MarTech · Multimodal Content Engine</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-cream/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cream/40">
-            <div>© 2026 Deshly · Built in Dhaka, for the diaspora</div>
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span>All systems operational</span>
+          <div className="md:col-span-3">
+            <div className={`${T.monoLabel} text-[#0F0F0F]/45 mb-4`}>Team</div>
+            <div className={`space-y-2.5 ${T.bodyS}`}>
+              <div>Samprity Haque — Lead</div>
+              <div>Sirajus Salikin Siddique — Backend</div>
+              <div>Meher Nigar — Frontend</div>
             </div>
           </div>
         </div>
-      </footer>
-    </main>
+
+        <div className="mt-12 pt-6 border-t bo-rule flex items-center justify-between gap-4">
+          <span className={`${T.monoData} text-[#0F0F0F]/40`}>
+            © 2026 Deshly · Built in Dhaka, for the world
+          </span>
+          <span className={`${T.monoData} text-[#0F0F0F]/40 hidden sm:block`}>
+            Audience ✺ Angle ✺ Campaign
+          </span>
+        </div>
+      </div>
+
+      {/* giant wordmark — rises on scroll, letters ignite on hover */}
+      <Reveal className="mt-4 -mb-[0.22em]">
+        <div
+          aria-hidden
+          className="select-none text-center font-display font-semibold tracking-[-0.04em] leading-[0.8] text-[clamp(5rem,18vw,17rem)]"
+        >
+          {"Deshly.".split("").map((c, i) => (
+            <span
+              key={i}
+              className="inline-block text-[#0F0F0F]/[0.08] transition-colors duration-300 hover:text-[#D5613E]"
+            >
+              {c}
+            </span>
+          ))}
+        </div>
+      </Reveal>
+    </footer>
   );
 }

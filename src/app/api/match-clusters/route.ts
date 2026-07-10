@@ -4,9 +4,9 @@ import { callLLM } from "@/lib/llm";
 import type { Cluster } from "@/lib/types";
 import { logSignals } from "@/lib/signals";
 
-const MATCH_PROMPT = `You are Deshly — a diaspora commerce strategist. You decide which markets a brand should TEST a SPECIFIC product in first, score that recommendation on explainable factors, and explain your reasoning in plain language a brand owner understands.
+const MATCH_PROMPT = `You are Deshly — a global commerce strategist. You decide which markets a brand should TEST a SPECIFIC product in first, score that recommendation on explainable factors, and explain your reasoning in plain language a brand owner understands.
 
-You receive a product, a brand voice, and a set of consumer clusters (diaspora and/or local Bangladesh), each with documented real buying behavior. Reason about how THIS SPECIFIC PRODUCT fits how EACH market actually buys, score the top 3, and return them.
+You receive a product, a brand voice, and a set of consumer clusters (local and diaspora markets), each with documented real buying behavior. Reason about how THIS SPECIFIC PRODUCT fits how EACH market actually buys, score the top 3, and return them. Never assume a specific country, culture, language, or festival — read everything from the cluster data provided.
 
 IMPORTANT: You will only be given clusters the brand can ACTUALLY SERVE (based on their fulfillment capability). Never invent or suggest a market that is not in the provided list.
 
@@ -16,11 +16,11 @@ FIRST: READ THE PRODUCT
 
 Understand what the product IS before scoring:
 - CATEGORY & SUBCATEGORY: what is it, specifically
-- PRICE TIER: budget / mid / premium / luxury (relative to Bangladeshi retail; budget under ~1000 BDT equiv, mid 1000-4000, premium 4000-12000, luxury 12000+). If a price is given, use it. If not, infer from the description.
+- PRICE TIER: budget / mid / premium / luxury — judge RELATIVE TO EACH CLUSTER'S OWN currency and AOV range (provided per cluster), never a fixed currency. If a price is given, use it; otherwise infer the tier from the description.
 - MAIN USE CASE: how/why people use it (e.g. "daily self-care", "festival gifting", "everyday wear")
 - TRUST REQUIREMENT: how much trust a buyer needs before purchasing (High for skincare/ingestibles/high-price, Medium for fashion, Low for cheap impulse items)
-- CULTURAL CODING: heritage (Bangladeshi/South-Asian tradition), western (global/streetwear), neutral, or fusion
-- OCCASION: everyday, or tied to specific occasions (Eid, weddings, Pohela Boishakh)
+- CULTURAL CODING: heritage (tied to a cultural tradition/identity), western (global/streetwear), neutral, or fusion — infer from the product, never assume a region
+- OCCASION: everyday, or tied to specific occasions (holidays, festivals, weddings, gifting seasons) — read each cluster's primary_occasions; never assume a specific culture's festival
 
 Use any STRUCTURED HINTS the brand provided (positioning, target buyer, occasions) to sharpen this read — but still reason from the description.
 
@@ -49,7 +49,7 @@ FIT TIER from the recommendation score:
 THE RANKING MUST CHANGE BASED ON THE PRODUCT
 -----------------------------------
 
-Most important rule. A skincare serum, a saree, a snack box, a perfume, and a budget t-shirt must NOT produce the same top markets. Reason from the product. A gift-sending Gulf audience scores high for a sendable festival gift but low for everyday sneakers. Be honest with low scores.
+Most important rule. A skincare serum, an heirloom textile, a snack box, a perfume, and a budget t-shirt must NOT produce the same top markets. Reason from the product. A gift-sending diaspora audience scores high for a sendable festive/heritage gift but low for everyday sneakers. Be honest with low scores.
 
 Return the TOP 3 markets by recommendation score, best first — chosen ONLY from the provided clusters.
 
@@ -79,7 +79,7 @@ RETURN ONLY VALID JSON — NO MARKDOWN
   "rankings": [
     {
       "cluster_id": "exact_id_from_input",
-      "display_name": "'[City] — [Segment]'. Disambiguate repeats. E.g. 'Dhaka — Students 18-24'.",
+      "display_name": "'[City] — [Segment]'. Disambiguate repeats. E.g. 'Toronto — Students 18-24'.",
       "fit_tier": "Strong Fit | Moderate Fit | Exploratory",
       "recommendation_score": 8.7,
       "one_line_reason": "ONE sentence. Why test here first — references a specific product attribute AND a specific audience behavior.",
@@ -181,6 +181,7 @@ export async function POST(request: NextRequest) {
       targetBuyer,
       occasions,
       notes,
+      culturalRelevance,
       personalize,
       brandHandle,
     } = body;
@@ -282,6 +283,18 @@ export async function POST(request: NextRequest) {
     if (targetBuyer) hints.push(`Main buyer: ${targetBuyer}`);
     if (Array.isArray(occasions) && occasions.length) hints.push(`Purchase occasions: ${occasions.join(", ")}`);
     if (notes) hints.push(`Brand notes: ${notes}`);
+    // Internal retrieval signal — global, never region-specific. When the product
+    // carries cultural relevance, audiences with a matching cultural identity may
+    // be surfaced with that as part of the reasoning. Ignored when "unknown"/"low".
+    const cr = typeof culturalRelevance === "string" ? culturalRelevance.toLowerCase() : "";
+    if (cr === "high" || cr === "moderate") {
+      hints.push(
+        `Cultural relevance: ${cr} — this product connects to a cultural identity/tradition/community. ` +
+          `When a cluster is a strong cultural-identity match, you MAY reference this in why_this_fits ` +
+          `(e.g. "strong cultural relevance for this community"). Do NOT assume any specific region — ` +
+          `reason only from the clusters provided.`
+      );
+    }
     const hintsBlock = hints.length ? `\nSTRUCTURED HINTS:\n${hints.join("\n")}` : "";
 
     const fullPrompt = `${MATCH_PROMPT}

@@ -21,6 +21,61 @@ export interface BrandVoiceProfile {
   they_never: string[];
 }
 
+// ============================================================
+// BRAND GUIDELINES — structured onboarding input (the NEW primary
+// Brand DNA source). These answers are converted into a synthetic
+// brand corpus and fed into the EXISTING brand-voice extractor, so
+// no separate model is needed. See src/lib/brand-guidelines.ts.
+// ============================================================
+export type EmojiPreference = "avoid" | "light" | "free" | "depends";
+
+export interface BrandGuidelinesInput {
+  // Step 1 — Brand basics
+  brandName: string;
+  websiteOrSocial?: string;
+  productCategory: string;
+  whatYouSell: string;
+  differentiator: string;
+  // Step 2 — Audience & market
+  idealCustomer: string;
+  targetMarkets: string[];
+  languagePreference: string[];
+  avoidAudiences?: string;
+  // Step 3 — Personality
+  personalityTraits: string[];
+  customPersonality?: string;
+  // Step 4 — Voice & rules
+  communicationStyle: string[];
+  alwaysRules?: string;
+  neverRules?: string;
+  bannedWordsOrTone?: string;
+  emojiPreference?: EmojiPreference;
+  // Step 5 — Admired brands (optional)
+  admiredBrands?: string[];
+  // Optional enrichment — existing captions (NOT required)
+  captions?: string;
+}
+
+// A clean, presentation-ready Brand DNA summary. The pipeline returns
+// a BrandVoiceProfile (above); this is the friendly shape we can derive
+// for display/persistence when a structured summary is wanted.
+export interface BrandDNAProfile {
+  brandName: string;
+  positioning: string;
+  voiceSummary: string;
+  personalityTraits: string[];
+  communicationStyle: string[];
+  targetAudienceSummary: string;
+  marketPreferences: string[];
+  languageRules: string[];
+  brandRules: {
+    always: string[];
+    never: string[];
+  };
+  sampleCopy: string[];
+  generatedAt: string;
+}
+
 // Cluster — a diaspora or local consumer segment
 export interface Cluster {
   id: string;

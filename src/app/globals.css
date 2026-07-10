@@ -1,19 +1,23 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   /* DARK THEME — DESHLY V2 */
-  
+
   /* Surfaces — deep warm blacks */
   --color-void: #0A0908;
   --color-ink: #0F0D0B;
   --color-ink-soft: #181614;
   --color-ink-deep: #050403;
-  
+
   /* Foreground */
   --color-cream: #F5EFE3;
   --color-cream-dim: #D9D2C5;
   --color-cream-muted: #8B8377;
-  
+
   /* Accents — your existing brand */
   --color-terracotta: #D5613E;
   --color-terracotta-glow: #E8835C;
@@ -21,22 +25,61 @@
   --color-brass: #B8956A;
   --color-brass-glow: #D4B589;
   --color-brass-deep: #8C6E45;
-  
+
   /* Gradient stops — used for mesh orbs */
   --color-grad-1: #D5613E;
   --color-grad-2: #B8956A;
   --color-grad-3: #6A4628;
-  
+
   /* Type */
-  --font-serif: "Instrument Serif", Georgia, serif;
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-bangla: "Tiro Bangla", serif;
-  --font-mono: "JetBrains Mono", "Courier New", monospace;
-  
+  --font-serif: var(--font-instrument), "Instrument Serif", Georgia, serif;
+  --font-sans: var(--font-sans);
+  --font-bangla: var(--font-tiro-bangla), "Tiro Bangla", serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+
   /* Animation easings — Renok-style */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --font-heading: var(--font-heading);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 * {
@@ -146,6 +189,90 @@ body {
 }
 .marquee-track {
   animation: marquee-scroll 35s linear infinite;
+  will-change: transform;
+}
+
+/* =========================================================================
+   BRAND OS — Future Brand System (Direction B). Landing page only.
+   Scoped under .brandos so the global dark theme (app pages) is untouched.
+   ========================================================================= */
+.brandos {
+  --bo-paper: #f6f3ee;
+  --bo-paper-raised: #fbf9f5;
+  --bo-paper-sunken: #ede8de;
+  --bo-ink: #0f0f0f;
+  --bo-rule: rgba(15, 15, 15, 0.12);
+  --bo-rule-strong: rgba(15, 15, 15, 0.24);
+  --bo-signal: #d5613e;
+
+  background: var(--bo-paper);
+  color: var(--bo-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv01", "tnum";
+}
+.brandos ::selection {
+  background: var(--bo-signal);
+  color: var(--bo-paper);
+}
+
+/* Display / heading typeface — Parkinsans */
+.brandos .font-display {
+  font-family: var(--font-parkinsans), system-ui, sans-serif;
+}
+
+/* Hairline rules tuned for the warm light surface */
+.bo-rule {
+  border-color: var(--bo-rule);
+}
+.bo-rule-strong {
+  border-color: var(--bo-rule-strong);
+}
+
+/* Bracket ticks — top-left + bottom-right registration marks */
+.bo-bracket {
+  position: relative;
+}
+.bo-bracket::before,
+.bo-bracket::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-color: var(--bo-rule-strong);
+  pointer-events: none;
+}
+.bo-bracket::before {
+  top: 0;
+  left: 0;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+.bo-bracket::after {
+  bottom: 0;
+  right: 0;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+}
+
+/* Subtle paper grain for cohesion (static, behind content) */
+.bo-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* Status dot pulse (slow, calm — feedback not flourish) */
+@keyframes bo-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.bo-pulse {
+  animation: bo-pulse 2.4s ease-in-out infinite;
 }
 
 /* Magnetic transitions */
@@ -163,6 +290,61 @@ body {
 .reveal-fade {
   opacity: 0;
   will-change: opacity;
+}
+
+/* ===== Cinematic landing additions (motion only — tokens unchanged) ===== */
+
+/* Outlined display type for the marquee band — same font, same ink */
+.brandos .bo-outline-text {
+  -webkit-text-stroke: 1px rgba(15, 15, 15, 0.32);
+  color: transparent;
+}
+/* Cream-stroke variant for the dark act */
+.brandos .bo-outline-text-dark {
+  -webkit-text-stroke: 1px rgba(245, 239, 227, 0.35);
+  color: transparent;
+}
+
+/* Orbs hold still for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .orb-1,
+  .orb-2,
+  .orb-3 {
+    animation: none;
+  }
+}
+
+/* Hero scroll indicator — highlight travels down the hairline */
+@keyframes bo-scroll-line {
+  0% { transform: translateY(-120%); }
+  55% { transform: translateY(220%); }
+  100% { transform: translateY(220%); }
+}
+.bo-scroll-line {
+  animation: bo-scroll-line 1.8s cubic-bezier(0.83, 0, 0.17, 1) infinite;
+}
+
+/* Idle drift for the hero's floating product cards */
+@keyframes bo-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(1.2deg); }
+}
+.bo-float {
+  animation: bo-float 7s ease-in-out infinite;
+}
+.bo-float-slow {
+  animation: bo-float 9.5s ease-in-out 0.8s infinite;
+}
+.bo-float-slower {
+  animation: bo-float 11s ease-in-out 1.6s infinite reverse;
+}
+
+/* The dark hero is painted by GSAP on the page surface; when motion is
+   reduced that choreography never runs, so paint the hero statically. */
+@media (prefers-reduced-motion: reduce) {
+  .brandos .bo-hero-ink {
+    background: #0f0f0f;
+  }
 }
 
 /* Bangla serif */
@@ -245,4 +427,85 @@ body {
 .glow-card:hover::before {
   opacity: 1;
   animation: deshly-rotate 3s linear infinite;
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.147 0.004 49.3);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.147 0.004 49.3);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.147 0.004 49.3);
+  --primary: oklch(0.214 0.009 43.1);
+  --primary-foreground: oklch(0.986 0.002 67.8);
+  --secondary: oklch(0.96 0.002 17.2);
+  --secondary-foreground: oklch(0.214 0.009 43.1);
+  --muted: oklch(0.96 0.002 17.2);
+  --muted-foreground: oklch(0.547 0.021 43.1);
+  --accent: oklch(0.96 0.002 17.2);
+  --accent-foreground: oklch(0.214 0.009 43.1);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0.005 34.3);
+  --input: oklch(0.922 0.005 34.3);
+  --ring: oklch(0.714 0.014 41.2);
+  --chart-1: oklch(0.868 0.007 39.5);
+  --chart-2: oklch(0.547 0.021 43.1);
+  --chart-3: oklch(0.438 0.017 39.3);
+  --chart-4: oklch(0.367 0.016 35.7);
+  --chart-5: oklch(0.268 0.011 36.5);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.986 0.002 67.8);
+  --sidebar-foreground: oklch(0.147 0.004 49.3);
+  --sidebar-primary: oklch(0.214 0.009 43.1);
+  --sidebar-primary-foreground: oklch(0.986 0.002 67.8);
+  --sidebar-accent: oklch(0.96 0.002 17.2);
+  --sidebar-accent-foreground: oklch(0.214 0.009 43.1);
+  --sidebar-border: oklch(0.922 0.005 34.3);
+  --sidebar-ring: oklch(0.714 0.014 41.2);
+}
+
+.dark {
+  --background: oklch(0.147 0.004 49.3);
+  --foreground: oklch(0.986 0.002 67.8);
+  --card: oklch(0.214 0.009 43.1);
+  --card-foreground: oklch(0.986 0.002 67.8);
+  --popover: oklch(0.214 0.009 43.1);
+  --popover-foreground: oklch(0.986 0.002 67.8);
+  --primary: oklch(0.922 0.005 34.3);
+  --primary-foreground: oklch(0.214 0.009 43.1);
+  --secondary: oklch(0.268 0.011 36.5);
+  --secondary-foreground: oklch(0.986 0.002 67.8);
+  --muted: oklch(0.268 0.011 36.5);
+  --muted-foreground: oklch(0.714 0.014 41.2);
+  --accent: oklch(0.268 0.011 36.5);
+  --accent-foreground: oklch(0.986 0.002 67.8);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.547 0.021 43.1);
+  --chart-1: oklch(0.868 0.007 39.5);
+  --chart-2: oklch(0.547 0.021 43.1);
+  --chart-3: oklch(0.438 0.017 39.3);
+  --chart-4: oklch(0.367 0.016 35.7);
+  --chart-5: oklch(0.268 0.011 36.5);
+  --sidebar: oklch(0.214 0.009 43.1);
+  --sidebar-foreground: oklch(0.986 0.002 67.8);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.986 0.002 67.8);
+  --sidebar-accent: oklch(0.268 0.011 36.5);
+  --sidebar-accent-foreground: oklch(0.986 0.002 67.8);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.547 0.021 43.1);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

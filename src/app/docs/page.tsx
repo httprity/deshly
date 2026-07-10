@@ -4,9 +4,9 @@ import { useEffect } from "react";
 
 const CSS = `
 :root{
-  --void:#0c0a09; --void-2:#14110f; --panel:#1a1613; --panel-line:#2a231e;
-  --terra:#d5613e; --terra-soft:#e08a6c; --brass:#b8956a; --brass-soft:#cbab86;
-  --cream:#f2ead8; --cream-dim:#a89e8c; --muted:#6f655a; --ok:#6f9e6a;
+  --void:#f6f3ee; --void-2:#fbf9f5; --panel:#fbf9f5; --panel-line:rgba(15,15,15,.12);
+  --terra:#d5613e; --terra-soft:#b14525; --brass:#6f655a; --brass-soft:#8c6e45;
+  --cream:#0f0f0f; --cream-dim:#4a4540; --muted:#8a8178; --ok:#4f7a4a;
   --display:"Instrument Serif",Georgia,serif;
   --body:"Manrope",system-ui,sans-serif;
   --mono:"Spline Sans Mono",monospace;
@@ -18,7 +18,7 @@ const CSS = `
 .dz::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .dz .wrap{position:relative;z-index:2;max-width:var(--maxw);margin:0 auto;padding:0 24px}
 
-.dz nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(12,10,9,.72);border-bottom:1px solid var(--panel-line)}
+.dz nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(246,243,238,.8);border-bottom:1px solid var(--panel-line)}
 .dz .nav-inner{max-width:var(--maxw);margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .dz .brand{display:flex;align-items:baseline;gap:10px;font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:0}
 .dz .brand .dot{color:var(--terra)}
@@ -61,7 +61,7 @@ const CSS = `
 @media(max-width:860px){.dz .grid2,.dz .grid3{grid-template-columns:1fr}}
 
 .dz .card{background:var(--panel);border:1px solid var(--panel-line);border-radius:6px;padding:26px;transition:.25s}
-.dz .card:hover{border-color:#3a2f26;transform:translateY(-2px)}
+.dz .card:hover{border-color:rgba(15,15,15,.24);transform:translateY(-2px)}
 .dz .card h3{font-family:var(--display);font-weight:400;font-size:23px;margin-bottom:10px;letter-spacing:0}
 .dz .card h3 .num{font-family:var(--mono);font-size:12px;color:var(--terra);margin-right:8px}
 .dz .card p{color:var(--cream-dim);font-size:14.5px;margin-bottom:0}
@@ -403,7 +403,7 @@ export default function DocsPage() {
                 <tr>
                   <td>Brand voice extraction</td>
                   <td>
-                    7-field structured profile + 1536-dim embedding from raw
+                    7-field structured profile + 768-dim embedding from raw
                     captions
                   </td>
                   <td>
@@ -778,7 +778,7 @@ export default function DocsPage() {
               <ul className="bullets">
                 <li>
                   <strong>Brand voice — retrieved</strong>
-                  Embedded in pgvector (1536-dim, IVFFlat) and pulled by similarity.
+                  Embedded in pgvector (768-dim, IVFFlat) and pulled by similarity.
                 </li>
                 <li>
                   <strong>Cluster knowledge — structured</strong>
