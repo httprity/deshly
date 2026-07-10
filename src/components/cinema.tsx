@@ -10,12 +10,14 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import {
   motion,
   AnimatePresence,
   useMotionValue,
+  useMotionTemplate,
   useSpring,
   useScroll,
   useVelocity,
@@ -251,7 +253,7 @@ export function MaskedWords({
    ========================================================================= */
 const wrap = (min: number, max: number, v: number) => {
   const range = max - min;
-  return min + (((v - min) % range) + range) % range;
+  return min + ((((v - min) % range) + range) % range);
 };
 
 export function VelocityMarquee({
@@ -276,6 +278,8 @@ export function VelocityMarquee({
   });
   const directionFactor = useRef(1);
   const x = useTransform(baseX, (v) => `${wrap(-25, 0, v)}%`);
+  /* fast scroll leans the whole band over — italic under momentum */
+  const skewX = useTransform(smoothVelocity, [-1200, 1200], [3.5, -3.5]);
 
   useAnimationFrame((_, delta) => {
     if (reduce) return;
@@ -289,7 +293,10 @@ export function VelocityMarquee({
 
   return (
     <div className={`overflow-hidden whitespace-nowrap ${className}`}>
-      <motion.div className="flex w-max flex-nowrap" style={{ x }}>
+      <motion.div
+        className="flex w-max flex-nowrap will-change-transform"
+        style={reduce ? { x } : { x, skewX }}
+      >
         {[0, 1, 2, 3].map((i) => (
           <span key={i} className="flex shrink-0 items-center">
             {children}
@@ -305,9 +312,21 @@ export function VelocityMarquee({
    ink disc with a mono label over any [data-cursor="Label"] target.
    Desktop (fine pointer) only. Native cursor stays visible.
    ========================================================================= */
+const subscribeFinePointer = (cb: () => void) => {
+  const mq = window.matchMedia("(pointer: fine)");
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+};
+
 export function CursorDot() {
   const reduce = useReducedMotion();
-  const [enabled, setEnabled] = useState(false);
+  /* SSR-safe: false on the server, live matchMedia on the client */
+  const finePointer = useSyncExternalStore(
+    subscribeFinePointer,
+    () => window.matchMedia("(pointer: fine)").matches,
+    () => false,
+  );
+  const enabled = finePointer && !reduce;
   const [label, setLabel] = useState<string | null>(null);
   const x = useMotionValue(-100);
   const y = useMotionValue(-100);
@@ -315,9 +334,7 @@ export function CursorDot() {
   const sy = useSpring(y, { stiffness: 500, damping: 40, mass: 0.4 });
 
   useEffect(() => {
-    if (reduce) return;
-    if (!window.matchMedia("(pointer: fine)").matches) return;
-    setEnabled(true);
+    if (!enabled) return;
 
     const onMove = (e: MouseEvent) => {
       x.set(e.clientX);
@@ -333,7 +350,7 @@ export function CursorDot() {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseover", onOver);
     };
-  }, [reduce, x, y]);
+  }, [enabled, x, y]);
 
   if (!enabled) return null;
 
@@ -440,6 +457,108 @@ export function ParallaxImage({
         />
       </div>
     </div>
+  );
+}
+
+/* =========================================================================
+   SPOTLIGHT — a soft terracotta pool of light follows the cursor across the
+   parent section. Dark-act only; fine pointers only; inert under reduced
+   motion. Mount it as a direct child of a `relative` section.
+   ========================================================================= */
+export function Spotlight({ className = "" }: { className?: string }) {
+  const reduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(-9999);
+  const y = useMotionValue(-9999);
+  const sx = useSpring(x, { stiffness: 90, damping: 28, mass: 0.8 });
+  const sy = useSpring(y, { stiffness: 90, damping: 28, mass: 0.8 });
+  const bg = useMotionTemplate`radial-gradient(620px circle at ${sx}px ${sy}px, rgba(232,131,92,0.08), transparent 68%)`;
+
+  useEffect(() => {
+    if (reduce) return;
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+    const el = ref.current?.parentElement;
+    if (!el) return;
+    const onMove = (e: MouseEvent) => {
+      const r = ref.current!.getBoundingClientRect();
+      x.set(e.clientX - r.left);
+      y.set(e.clientY - r.top);
+    };
+    el.addEventListener("mousemove", onMove, { passive: true });
+    return () => el.removeEventListener("mousemove", onMove);
+  }, [reduce, x, y]);
+
+  return (
+    <motion.div
+      ref={ref}
+      aria-hidden
+      className={`pointer-events-none absolute inset-0 ${className}`}
+      style={reduce ? undefined : { background: bg }}
+    />
+  );
+}
+
+/* =========================================================================
+   SCALE IN — dolly-in: the block eases from slightly small + dim to full
+   presence, scrubbed to its approach through the viewport.
+   ========================================================================= */
+export function ScaleIn({
+  children,
+  className = "",
+  from = 0.93,
+}: {
+  children: ReactNode;
+  className?: string;
+  from?: number;
+}) {
+  const reduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start 95%", "start 40%"],
+  });
+  const scale = useTransform(scrollYProgress, [0, 1], [from, 1]);
+  const opacity = useTransform(scrollYProgress, [0, 1], [0.5, 1]);
+  return (
+    <motion.div
+      ref={ref}
+      style={reduce ? undefined : { scale, opacity }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* =========================================================================
+   PARALLAX — block drifts vertically at its own speed while it crosses the
+   viewport. `speed` is total px of travel; positive lags the scroll
+   (reads "behind" the page), negative leads it. Inert under reduced motion.
+   ========================================================================= */
+export function Parallax({
+  children,
+  speed = 60,
+  className = "",
+}: {
+  children: ReactNode;
+  speed?: number;
+  className?: string;
+}) {
+  const reduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const y = useTransform(scrollYProgress, [0, 1], [speed, -speed]);
+  return (
+    <motion.div
+      ref={ref}
+      style={reduce ? undefined : { y }}
+      className={className}
+    >
+      {children}
+    </motion.div>
   );
 }
 
@@ -558,8 +677,20 @@ export function ImageTrail({
       const rot = gsap.utils.random(-14, 14);
       gsap.fromTo(
         img,
-        { xPercent: -50, yPercent: -50, scale: 0.3, opacity: 0, rotation: rot * 1.6 },
-        { scale: 1, opacity: 1, rotation: rot, duration: 0.35, ease: "power3.out" },
+        {
+          xPercent: -50,
+          yPercent: -50,
+          scale: 0.3,
+          opacity: 0,
+          rotation: rot * 1.6,
+        },
+        {
+          scale: 1,
+          opacity: 1,
+          rotation: rot,
+          duration: 0.35,
+          ease: "power3.out",
+        },
       );
       gsap.to(img, {
         yPercent: 60,
@@ -584,6 +715,73 @@ export function ImageTrail({
     <div ref={ref} className={`relative overflow-hidden ${className}`}>
       {children}
     </div>
+  );
+}
+
+/* =========================================================================
+   DEPTH WORDS — 3D word cascade: each word lies flat below the baseline
+   (rotated away from camera, pushed back in z) and swings up into place,
+   scrubbed to scroll. The Depth & 3D sibling of WordScrub.
+   ========================================================================= */
+export function DepthWords({
+  text,
+  className = "",
+  accent = [],
+}: {
+  text: string;
+  className?: string;
+  accent?: number[]; // word indices rendered in terracotta
+}) {
+  const ref = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const ctx = gsap.context(() => {
+      gsap.set(el, { perspective: 700 });
+      gsap.fromTo(
+        el.querySelectorAll("[data-w]"),
+        {
+          opacity: 0,
+          rotateX: -78,
+          yPercent: 55,
+          z: -90,
+          transformOrigin: "50% 100%",
+        },
+        {
+          opacity: 1,
+          rotateX: 0,
+          yPercent: 0,
+          z: 0,
+          stagger: 0.35,
+          ease: "none",
+          scrollTrigger: {
+            trigger: el,
+            start: "top 86%",
+            end: "top 30%",
+            scrub: 0.4,
+          },
+        },
+      );
+    }, el);
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <p ref={ref} className={className}>
+      {text.split(" ").map((w, i) => (
+        <span key={i} className="inline-block [transform-style:preserve-3d]">
+          <span
+            data-w
+            className={`inline-block will-change-transform ${accent.includes(i) ? "text-[#D5613E]" : ""}`}
+          >
+            {w}
+          </span>{" "}
+        </span>
+      ))}
+    </p>
   );
 }
 

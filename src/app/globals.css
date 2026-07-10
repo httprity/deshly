@@ -8,28 +8,28 @@
   /* DARK THEME — DESHLY V2 */
 
   /* Surfaces — deep warm blacks */
-  --color-void: #0A0908;
-  --color-ink: #0F0D0B;
+  --color-void: #0a0908;
+  --color-ink: #0f0d0b;
   --color-ink-soft: #181614;
   --color-ink-deep: #050403;
 
   /* Foreground */
-  --color-cream: #F5EFE3;
-  --color-cream-dim: #D9D2C5;
-  --color-cream-muted: #8B8377;
+  --color-cream: #f5efe3;
+  --color-cream-dim: #d9d2c5;
+  --color-cream-muted: #8b8377;
 
   /* Accents — your existing brand */
-  --color-terracotta: #D5613E;
-  --color-terracotta-glow: #E8835C;
-  --color-terracotta-deep: #B14525;
-  --color-brass: #B8956A;
-  --color-brass-glow: #D4B589;
-  --color-brass-deep: #8C6E45;
+  --color-terracotta: #d5613e;
+  --color-terracotta-glow: #e8835c;
+  --color-terracotta-deep: #b14525;
+  --color-brass: #b8956a;
+  --color-brass-glow: #d4b589;
+  --color-brass-deep: #8c6e45;
 
   /* Gradient stops — used for mesh orbs */
-  --color-grad-1: #D5613E;
-  --color-grad-2: #B8956A;
-  --color-grad-3: #6A4628;
+  --color-grad-1: #d5613e;
+  --color-grad-2: #b8956a;
+  --color-grad-3: #6a4628;
 
   /* Type */
   --font-serif: var(--font-instrument), "Instrument Serif", Georgia, serif;
@@ -158,18 +158,37 @@ body {
 
 /* Animated gradient mesh orbs */
 @keyframes orbit-1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.95); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
 }
 @keyframes orbit-2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-40px, 30px) scale(1.05); }
-  66% { transform: translate(25px, -40px) scale(0.9); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-40px, 30px) scale(1.05);
+  }
+  66% {
+    transform: translate(25px, -40px) scale(0.9);
+  }
 }
 @keyframes orbit-3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(50px, 50px) scale(1.15); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(50px, 50px) scale(1.15);
+  }
 }
 
 .orb-1 {
@@ -184,8 +203,12 @@ body {
 
 /* Marquee */
 @keyframes marquee-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 .marquee-track {
   animation: marquee-scroll 35s linear infinite;
@@ -268,8 +291,13 @@ body {
 
 /* Status dot pulse (slow, calm — feedback not flourish) */
 @keyframes bo-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 .bo-pulse {
   animation: bo-pulse 2.4s ease-in-out infinite;
@@ -316,9 +344,15 @@ body {
 
 /* Hero scroll indicator — highlight travels down the hairline */
 @keyframes bo-scroll-line {
-  0% { transform: translateY(-120%); }
-  55% { transform: translateY(220%); }
-  100% { transform: translateY(220%); }
+  0% {
+    transform: translateY(-120%);
+  }
+  55% {
+    transform: translateY(220%);
+  }
+  100% {
+    transform: translateY(220%);
+  }
 }
 .bo-scroll-line {
   animation: bo-scroll-line 1.8s cubic-bezier(0.83, 0, 0.17, 1) infinite;
@@ -326,8 +360,13 @@ body {
 
 /* Idle drift for the hero's floating product cards */
 @keyframes bo-float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-12px) rotate(1.2deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1.2deg);
+  }
 }
 .bo-float {
   animation: bo-float 7s ease-in-out infinite;
@@ -366,15 +405,19 @@ body {
   inherits: false;
 }
 @keyframes deshly-rotate {
-  to { --deshly-angle: 360deg; }
+  to {
+    --deshly-angle: 360deg;
+  }
 }
 
 /* Pro button — constant animated glowing border + outer bloom */
 .btn-glow-pro {
   position: relative;
   isolation: isolate;
-  box-shadow: 0 0 30px rgba(213, 97, 62, 0.40);
-  transition: box-shadow .3s ease, transform .3s ease;
+  box-shadow: 0 0 30px rgba(213, 97, 62, 0.4);
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 .btn-glow-pro::before {
   content: "";
@@ -382,13 +425,25 @@ body {
   inset: 0;
   border-radius: inherit;
   padding: 2px;
-  background: conic-gradient(from var(--deshly-angle),
-    transparent 0%, #f2ead8 10%, #e08a6c 25%, transparent 45%,
-    transparent 55%, #e08a6c 75%, #f2ead8 90%, transparent 100%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  background: conic-gradient(
+    from var(--deshly-angle),
+    transparent 0%,
+    #f2ead8 10%,
+    #e08a6c 25%,
+    transparent 45%,
+    transparent 55%,
+    #e08a6c 75%,
+    #f2ead8 90%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
-          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask-composite: exclude;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
   animation: deshly-rotate 3s linear infinite;
   pointer-events: none;
 }
@@ -401,7 +456,9 @@ body {
 .glow-card {
   position: relative;
   isolation: isolate;
-  transition: transform .35s ease, box-shadow .35s ease;
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
 }
 .glow-card::before {
   content: "";
@@ -409,15 +466,26 @@ body {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: conic-gradient(from var(--deshly-angle),
-    transparent 0%, #d5613e 15%, #e08a6c 30%, transparent 50%,
-    transparent 60%, #b8956a 80%, transparent 100%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  background: conic-gradient(
+    from var(--deshly-angle),
+    transparent 0%,
+    #d5613e 15%,
+    #e08a6c 30%,
+    transparent 50%,
+    transparent 60%,
+    #b8956a 80%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
-          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask-composite: exclude;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
   opacity: 0;
-  transition: opacity .4s ease;
+  transition: opacity 0.4s ease;
   pointer-events: none;
 }
 .glow-card:hover {
@@ -427,6 +495,19 @@ body {
 .glow-card:hover::before {
   opacity: 1;
   animation: deshly-rotate 3s linear infinite;
+}
+
+/* Featured tier — the ring never sleeps (hover still brightens via .glow-card) */
+.glow-card-live::before {
+  padding: 2px;
+  opacity: 1;
+  animation: deshly-rotate 3.5s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .glow-card-live::before {
+    animation: none;
+    opacity: 0.5;
+  }
 }
 
 :root {
